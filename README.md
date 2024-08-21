@@ -23,11 +23,38 @@ The major parts of this project are:
 4. **Server/Dashboard**: We will write a simple dashboard page providing a link to the forecast visualization (predtimechart) page. Our initial thought is to implement this via a straighforward [S3 static website](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html) (i.e., a self-contained `index.html` file, perhaps with some JavaScript to access basic [hubverse admin](https://hubverse.io/en/latest/quickstart-hub-admin/intro.html) information to orient the viewer such as hub name, tasks summary, etc.) Two comparable sites are https://respicast.ecdc.europa.eu/ (especially) and https://covid19forecasthub.org/ . See [Dashboard architecture] below for details.
 
 
+# Assumptions/limitations
+
+Initially the visualization will have these limitations:
+
+- Only one round block in `tasks.json > rounds` can be plotted.
+- Only one `model_tasks` group within that round block can be plotted, and only `model_tasks` groups with `quantile` [output_types](https://hubverse.io/en/latest/user-guide/model-output.html#formats-of-model-output) will be considered.
+- The hub has `reference_date`|`origin_date` and `target_date`|`target_end_date` task IDs in `tasks.json > rounds > model_tasks > task_ids`.
+- Only forecast data will be plotted, not target data.
+- Model metadata must contain a boolean `designated_model` field.
+- others: @todo
+
+
+# Required hub configuration
+
+Some visualization-related information must be configured for each hub, including:
+
+- which interval levels to show. initially: None, 50%, 95%
+- which round block in `tasks.json` to use
+- reference_date column name
+- target_date column name
+- name of boolean field for model inclusion. initially we will assume it is `designated_model`
+- names of hub models - to be listed first
+- `initial_checked_models` (a predtimechart option)
+- others: @todo
+
+
 # Dashboard architecture
 
-Our initial thinking is an approach where we provide a fixed layout (e.g., a menubar at top and a content area in the middle, such as found at https://respicast.ecdc.europa.eu/ ) that allows limited customization [specified by convention](https://en.wikipedia.org/wiki/Convention_over_configuration) via markdown files (some with specific names) placed in directories with specific name. Details:
+Our initial thinking is an approach where we provide a fixed layout (e.g., a menubar at top and a content area in the middle, such as found at https://respicast.ecdc.europa.eu/ ) that allows limited customization [specified by convention](https://en.wikipedia.org/wiki/Convention_over_configuration) via markdown files (some with specific names) placed in directories with specific names. Details:
+
 - Configurable content is specified via markdown files located in a directory named `hub-website` (say) in the root hub directory.
-- The site layout is a single column (100% width) with two rows: A menubar/header at the top, and a content area taking the rest of the vertical space.
+- The site layout is a single column (100% width) with two rows: A menubar/header at the top, and a content area taking up the rest of the vertical space.
 - The menubar contains these items (from left to right): Home (brand image/text), "Forecasts", "Evaluations", "Background", "Community", "Get in touch".
 - The content area depends on the selected menu item:
   - Home: Content is loaded from `hub-website/home.md`.
@@ -38,7 +65,8 @@ Our initial thinking is an approach where we provide a fixed layout (e.g., a men
 
 # Testing
 
-We plan to use the https://github.com/hubverse-org/example-complex-forecast-hub for development unit tests.
+We plan to primarily use https://github.com/hubverse-org/example-complex-forecast-hub for development unit tests.
+
 
 # Questions/issues
 
@@ -46,3 +74,4 @@ We plan to use the https://github.com/hubverse-org/example-complex-forecast-hub 
 - Is this a good time to remove predtimechart's user ensemble, if desired?
 - Is this an opportunity to set up some kind of general purpose notification service for interested parties (e.g., hub admins) that informs them when, say, the viz is configured or updated, viz data files are updated, etc.?
 - Dashboard: Do we want to allow users to add menu items that link to pages with content loaded from .md files? For example, should we support a `hub-website/menus` where users can put files that become menu items with the file name (capitalized, say) and content generated from the file.
+- Generation/scheduling: We will need a flag to indicate whether we want to regenerate forecast json files for all past weeks, or only for the present week.
