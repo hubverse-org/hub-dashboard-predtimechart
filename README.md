@@ -2,12 +2,12 @@
 
 # Goal
 
-Create an initial dashboard that provides a [predtimechart](https://github.com/reichlab/predtimechart)-based forecast visualization component for the hub. The thinking is that this will allow us to get something practical into the hands of hubverse users relatively quickly. 
+Create an initial dashboard that provides a [predtimechart](https://github.com/reichlab/predtimechart)-based forecast visualization component for the hub. The thinking is that this will allow us to get something practical into the hands of hubverse users relatively quickly.
 
 Considerations:
+
 - Client side only, i.e., nothing server-side. This will greatly simplify new hub onboarding.
 - Others: @todo
-
 
 # Implementation summary
 
@@ -22,7 +22,6 @@ The major parts of this project are:
     - generation details (reference_date -> as_of/selected date, horizon, target_date: x axis, task id vars -> dropdowns, ...): @todo
 4. **Server/Dashboard**: We will write a simple dashboard page providing a link to the forecast visualization (predtimechart) page. Our initial thought is to implement this via a straighforward [S3 static website](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html) (i.e., a self-contained `index.html` file, perhaps with some JavaScript to access basic [hubverse admin](https://hubverse.io/en/latest/quickstart-hub-admin/intro.html) information to orient the viewer such as hub name, tasks summary, etc.) Two comparable sites are https://respicast.ecdc.europa.eu/ (especially) and https://covid19forecasthub.org/ . See [Dashboard architecture] below for details.
 
-
 # Assumptions/limitations
 
 Initially the visualization will have these limitations:
@@ -32,8 +31,9 @@ Initially the visualization will have these limitations:
 - The hub has `reference_date`|`origin_date` and `target_date`|`target_end_date` task IDs in `tasks.json > rounds > model_tasks > task_ids`.
 - Only forecast data will be plotted, not target data.
 - Model metadata must contain a boolean `designated_model` field.
+- For now only handles CSV files and not parquet ones.
+- Only one `target_keys` key in `tasks.json > /rounds/_/model_tasks/_/target_metadata/_/target_keys/` is supported.
 - others: @todo
-
 
 # Required hub configuration
 
@@ -48,7 +48,6 @@ Some visualization-related information must be configured for each hub, includin
 - `initial_checked_models` (a predtimechart option)
 - others: @todo
 
-
 # Dashboard architecture
 
 Our initial thinking is an approach where we provide a fixed layout (e.g., a menubar at top and a content area in the middle, such as found at https://respicast.ecdc.europa.eu/ ) that allows limited customization [specified by convention](https://en.wikipedia.org/wiki/Convention_over_configuration) via markdown files (some with specific names) placed in directories with specific names. Details:
@@ -57,16 +56,14 @@ Our initial thinking is an approach where we provide a fixed layout (e.g., a men
 - The site layout is a single column (100% width) with two rows: A menubar/header at the top, and a content area taking up the rest of the vertical space.
 - The menubar contains these items (from left to right): Home (brand image/text), "Forecasts", "Evaluations", "Background", "Community", "Get in touch".
 - The content area depends on the selected menu item:
-  - Home: Content is loaded from `hub-website/home.md`.
-  - "Forecasts": Content is the predtimechart visualization.
-  - "Evaluations": @todo
-  - "Background", "Community", "Get in touch": @todo loaded from specific files under `hub-website` such as `background.md`, etc.
-
+    - Home: Content is loaded from `hub-website/home.md`.
+    - "Forecasts": Content is the predtimechart visualization.
+    - "Evaluations": @todo
+    - "Background", "Community", "Get in touch": @todo loaded from specific files under `hub-website` such as `background.md`, etc.
 
 # Testing
 
 We plan to primarily use https://github.com/hubverse-org/example-complex-forecast-hub for development unit tests.
-
 
 # Questions/issues
 
@@ -75,3 +72,40 @@ We plan to primarily use https://github.com/hubverse-org/example-complex-forecas
 - Is this an opportunity to set up some kind of general purpose notification service for interested parties (e.g., hub admins) that informs them when, say, the viz is configured or updated, viz data files are updated, etc.?
 - Dashboard: Do we want to allow users to add menu items that link to pages with content loaded from .md files? For example, should we support a `hub-website/menus` where users can put files that become menu items with the file name (capitalized, say) and content generated from the file.
 - Generation/scheduling: We will need a flag to indicate whether we want to regenerate forecast json files for all past weeks, or only for the present week.
+- Where is the source data coming from - GitHub vs. S3?
+- Which model output formats will we support? The hub docs mention CSV and parquet, but that others (e.g., zipped files) might be supported.
+- Regarding naming the .json files, should we be influenced by Arrow's partitioning scheme where it names intermediate directories according to filtering.
+
+# Python local dev setup
+
+Use the following to create a local dev setup using pyenv and pipenv, which we assume are already installed.
+
+## Set up the virtual environment
+
+```bash
+$ cd <this repo>
+$ pyenv versions  # you should see this repo's .python-version set
+$ pipenv --python $(pyenv which python)
+```
+
+## Generate requirements-dev.txt (for pipenv, etc.)
+
+```bash
+$ pipenv install pip-tools  # for `pip-compile`
+$ pipenv run pip-compile --extra=dev --output-file=requirements/requirements-dev.txt pyproject.toml
+```
+
+## Install required packages
+
+```bash
+$ cd <this repo>
+$ pipenv install -r requirements/requirements-dev.txt -e .
+```
+
+## Run the tests and application
+
+```bash
+$ cd <this repo>
+$ pipenv run python -m pytest
+$ pipenv run python src/hub_predtimechart/app.py
+```

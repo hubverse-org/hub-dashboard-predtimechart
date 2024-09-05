@@ -1,0 +1,6 @@
+---
+rounds_idx: 1
+model_tasks_idx: 0
+reference_date_col_name: 'origin_date'
+target_date_col_name: null  # NB: invalid for predtimechart, which requires this column
+horizon_col_name: 'horizon'
