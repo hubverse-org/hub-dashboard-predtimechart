@@ -1,0 +1,512 @@
+{
+  "schema_version": "https://raw.githubusercontent.com/hubverse-org/schemas/main/v3.0.0/tasks-schema.json",
+  "rounds": [
+    {
+      "round_id": "origin_date",
+      "round_id_from_variable": true,
+      "model_tasks": [
+        {
+          "task_ids": {
+            "origin_date": {
+              "required": ["2021-03-07"],
+              "optional": null
+            },
+            "scenario_id": {
+              "required": ["A-2021-03-05", "B-2021-03-05", "C-2021-03-05", "D-2021-03-05"],
+              "optional": null
+            },
+            "location": {
+              "required": null,
+              "optional": ["US", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48", "49", "50", "51", "53", "54", "55", "56", "66", "69", "72", "78"]
+            },
+            "target": {
+              "required": ["inc death", "inc hosp", "inc case", "cum death", "cum hosp", "cum case"],
+              "optional": null
+            },
+            "horizon": {
+              "required": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+              "optional": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+            }
+          },
+          "output_type": {
+            "median": {
+              "output_type_id": {
+                "required": ["NA"],
+                "optional": null
+              },
+              "value" : {
+                "type": "double",
+                "minimum": 0
+              }
+            },
+            "quantile" : {
+              "output_type_id": {
+                "required": [0.01, 0.025, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.975, 0.99],
+                "optional": null
+              },
+              "value": {
+                "type": "double",
+                "minimum": 0
+              }
+            }
+          },
+          "target_metadata": [
+            {
+              "target_id": "inc death",
+              "target_name": "Incident deaths",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc death"
+              },
+              "description": "Weekly newly reported deaths due to COVID-19 as reported by state and local departments of public health and aggregated in the JHU-CSSE data collection system.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "inc hosp",
+              "target_name": "Incident hospitalizations",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc hosp"
+              },
+              "description": "Weekly newly reported hospitalizations where the patient has COVID-19, as reported by hospital facilities and aggregated in the HHS Protect data collection system.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "inc case",
+              "target_name": "Incident cases",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc case"
+              },
+              "description": "Weekly newly reported cases of COVID-19 as reported by state and local departments of public health and aggregated in the JHU-CSSE data collection system.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "cum death",
+              "target_name": "Cumulative deaths",
+              "target_units": "count",
+              "target_keys": {
+                "target": "cum death"
+              },
+              "description": "Cumulative reported deaths due to COVID-19 as reported by state and local departments of public health and aggregated in the JHU-CSSE data collection system.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "cum hosp",
+              "target_name": "Cumulative hospitalizations",
+              "target_units": "count",
+              "target_keys": {
+                "target": "cum hosp"
+              },
+              "description": "Cumulative reported hospitalizations where the patient has COVID-19, as reported by hospital facilities, starting at 0.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "cum case",
+              "target_name": "Cumulative cases",
+              "target_units": "count",
+              "target_keys": {
+                "target": "cum case"
+              },
+              "description": "Cumulative reported cases of COVID-19 as reported by state and local departments of public health and aggregated in the JHU-CSSE data collection system.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            }
+          ]
+        }
+      ],
+      "submissions_due": {
+        "start": "2021-03-09",
+        "end": "2021-04-09"
+      }
+    },
+    {
+      "round_id": "origin_date",
+      "round_id_from_variable": true,
+      "model_tasks": [
+        {
+          "task_ids": {
+            "origin_date": {
+              "required": ["2022-06-05"],
+              "optional": null
+            },
+            "scenario_id": {
+              "required": ["A-2022-05-09", "B-2022-05-09", "C-2022-05-09", "D-2022-05-09"],
+              "optional": null
+            },
+            "location": {
+              "required": null,
+              "optional": ["US", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48", "49", "50", "51", "53", "54", "55", "56"]
+            },
+            "target": {
+              "required": ["inc death", "inc hosp", "inc case", "cum death", "cum hosp", "cum case"],
+              "optional": ["inc inf"]
+            },
+            "horizon": {
+              "required": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+              "optional": null
+            }
+          },
+          "output_type": {
+            "median": {
+              "output_type_id": {
+                "required": ["NA"],
+                "optional": null
+              },
+              "value" : {
+                "type": "double",
+                "minimum": 0
+              }
+            },
+            "quantile" : {
+              "output_type_id": {
+                "required": [0.01, 0.025, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.975, 0.99],
+                "optional": [0, 1]
+              },
+              "value": {
+                "type": "double",
+                "minimum": 0
+              }
+            }
+          },
+          "target_metadata": [
+            {
+              "target_id": "inc death",
+              "target_name": "Incident deaths",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc death"
+              },
+              "description": "Weekly newly reported deaths due to COVID-19 as reported by state and local departments of public health and aggregated in the JHU-CSSE data collection system.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "inc hosp",
+              "target_name": "Incident hospitalizations",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc hosp"
+              },
+              "description": "Weekly newly reported hospitalizations where the patient has COVID-19, as reported by hospital facilities and aggregated in the HHS Protect data collection system.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "inc case",
+              "target_name": "Incident cases",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc case"
+              },
+              "description": "Weekly newly reported cases of COVID-19 as reported by state and local departments of public health and aggregated in the JHU-CSSE data collection system.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "inc inf",
+              "target_name": "Incident infections",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc inf"
+              },
+              "description": "Weekly new infections of COVID-19. This quantity is not directly observable or reported.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "cum death",
+              "target_name": "Cumulative deaths",
+              "target_units": "count",
+              "target_keys": {
+                "target": "cum death"
+              },
+              "description": "Cumulative reported deaths due to COVID-19 as reported by state and local departments of public health and aggregated in the JHU-CSSE data collection system.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "cum hosp",
+              "target_name": "Cumulative hospitalizations",
+              "target_units": "count",
+              "target_keys": {
+                "target": "cum hosp"
+              },
+              "description": "Cumulative reported hospitalizations where the patient has COVID-19, as reported by hospital facilities, starting at 0.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "cum case",
+              "target_name": "Cumulative cases",
+              "target_units": "count",
+              "target_keys": {
+                "target": "cum case"
+              },
+              "description": "Cumulative reported cases of COVID-19 as reported by state and local departments of public health and aggregated in the JHU-CSSE data collection system.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            }
+          ]
+        },
+        {
+          "task_ids": {
+            "origin_date": {
+              "required": ["2022-06-05"],
+              "optional": null
+            },
+             "scenario_id": {
+              "required": ["A-2022-05-09", "B-2022-05-09", "C-2022-05-09", "D-2022-05-09"],
+              "optional": null
+            },
+            "location": {
+              "required": null,
+              "optional": ["US", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48", "49", "50", "51", "53", "54", "55", "56"]
+            },
+            "target": {
+              "required": null,
+              "optional": ["prop X"]
+            },
+            "horizon": {
+              "required": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+              "optional": null
+            }
+          },
+          "output_type": {
+            "median": {
+              "output_type_id": {
+                "required": ["NA"],
+                "optional": null
+              },
+              "value" : {
+                "type": "double",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "target_metadata": [
+            {
+              "target_id": "prop X",
+              "target_name": "Proportion of variant X",
+              "target_units": "proportion",
+              "target_keys": {
+                "target": "prop X"
+              },
+              "description": "Mean proportion of cases caused by variant X in each week and location, as prop_X=cases_of_X / all_cases",
+              "target_type": "continuous",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            }
+          ]
+        }
+      ],
+      "submissions_due": {
+        "start": "2022-06-07",
+        "end": "2022-07-20"
+      }
+    },
+    {
+      "round_id": "origin_date",
+      "round_id_from_variable": true,
+      "model_tasks": [
+        {
+          "task_ids": {
+            "origin_date": {
+              "required": ["2022-05-02"],
+              "optional": null
+            },
+             "scenario_id": {
+              "required": null,
+              "optional": ["A-2022-05-02", "B-2022-05-02", "C-2022-05-02", "D-2022-05-02"]
+            },
+            "location": {
+              "required": null,
+              "optional": ["H0", "BE", "BG", "CZ", "DK", "DE", "EE", "IE", "GR", "ES", "FR", "HR", "IT", "CY", "LV", "LT", "LU", "HU", "MT", "NL", "AT", "PL", "PT", "RO", "SI", "SK", "FI", "SE", "GB", "IS", "LI", "NO", "CH"]
+            },
+            "target": {
+              "required": null,
+              "optional": ["inc death", "inc hosp", "inc inf", "inc case"]
+            },
+            "horizon": {
+              "required": null,
+              "optional": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
+            },
+            "age_group": {
+              "required": null,
+              "optional": ["0-15", "16-64", "65-130", "0-130"]
+            }
+          },
+          "output_type": {
+            "sample": {
+              "output_type_id_params": {
+                "is_required": true,
+                "type": "integer",
+                "min_samples_per_task": 100,
+                "max_samples_per_task": 100
+              },
+              "value": {
+                "type": "double",
+                "minimum": 0
+              }
+            }
+          },
+          "target_metadata": [
+            {
+              "target_id": "inc death",
+              "target_name": "Incident deaths",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc death"
+              },
+              "description": "Weekly newly reported deaths due to COVID-19.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "inc hosp",
+              "target_name": "Incident hospitalizations",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc hosp"
+              },
+              "description": "Weekly newly reported hospitalizations where the patient has COVID-19.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "inc inf",
+              "target_name": "Incident infections",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc inf"
+              },
+              "description": "Weekly new infections of COVID-19. This quantity is not directly observable or reported.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "inc case",
+              "target_name": "Incident cases",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc case"
+              },
+              "description": "Weekly newly reported cases of COVID-19.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            }
+          ]
+        }
+      ],
+      "submissions_due": {
+        "start": "2022-05-22",
+        "end": "2022-06-22"
+      }
+    },
+    {
+      "round_id": "2022-09-04",
+      "round_id_from_variable": false,
+      "model_tasks": [
+        {
+          "task_ids": {
+            "scenario_id": {
+              "required": null,
+              "optional": ["A-2022-09-04", "B-2022-09-04", "C-2022-09-04", "D-2022-09-04"]
+            },
+            "location": {
+              "required": null,
+              "optional": ["US", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48", "49", "50", "51", "53", "54", "55", "56"]
+            },
+            "target": {
+              "required": null,
+              "optional": ["inc death", "inc hosp", "inc case"]
+            },
+            "target_date": {
+              "required": null,
+              "optional": ["2022-09-10", "2022-09-17", "2022-09-24", "2022-10-01", "2022-10-08", "2022-10-15", "2022-10-22", "2022-10-29", "2022-11-05", "2022-11-12", "2022-11-19", "2022-11-26"]
+            }
+          },
+          "output_type": {
+            "sample": {
+              "output_type_id_params": {
+                "is_required": true,
+                "type": "integer",
+                "min_samples_per_task": 100,
+                "max_samples_per_task": 100
+              },
+              "value": {
+                "type": "double",
+                "minimum": 0
+              }
+            }
+          },
+          "target_metadata": [
+            {
+              "target_id": "inc death",
+              "target_name": "Incident deaths",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc death"
+              },
+              "description": "Weekly newly reported deaths due to COVID-19.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "inc hosp",
+              "target_name": "Incident hospitalizations",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc hosp"
+              },
+              "description": "Weekly newly reported hospitalizations where the patient has COVID-19.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            },
+            {
+              "target_id": "inc case",
+              "target_name": "Incident cases",
+              "target_units": "count",
+              "target_keys": {
+                "target": "inc case"
+              },
+              "description": "Weekly newly reported cases of COVID-19.",
+              "target_type": "discrete",
+              "is_step_ahead": true,
+              "time_unit": "week"
+            }
+          ]
+        }
+      ],
+      "submissions_due": {
+        "start": "2022-09-04",
+        "end": "2022-10-22"
+      }
+    }
+  ]
+}

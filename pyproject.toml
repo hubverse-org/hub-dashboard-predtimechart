@@ -1,0 +1,50 @@
+[project]
+name = "hub-dashboard-predtimechart"
+description = "A python application for generating files needed to visualize a hub using predtimechart"
+license = {text = "MIT License"}
+readme = "README.md"
+requires-python = '>=3.10'
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dynamic = ["version"]
+
+dependencies = [
+    "pandas",
+    "pyyaml",
+    "structlog",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pip-tools"
+]
+
+[project.entry-points."console_scripts"]
+hub_predtimechart = "hub_predtimechart.app:main"
+
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools", "wheel"]
+
+[tools.setuptools]
+packages = ["hub_predtimechart"]
+
+[tool.hub_predtimechart]
+# to write json-formatted logs to disk, uncomment the following line specify the file location
+# log_file = "/path/to/log/files/rechlab_python_template.log"
+
+[tool.ruff]
+line-length = 120
+lint.extend-select = ["I", "Q"]
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "double"
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.setuptools.dynamic]
+version = {attr = "hub_predtimechart.__version__"}
