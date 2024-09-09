@@ -32,7 +32,7 @@ def main(hub_dir, output_dir):
 
 
 def _main(hub_config: HubConfig, output_dir: Path):
-    # loop over inputs, generating a json file for each combination. the order of reference_date, model_id ensures we
+    # loop over every (reference_date X model_id) combination. the nested order of reference_date, model_id ensures we
     # open each model_output file only once. the tradeoff is that all model_output files for a particular reference_date
     # are loaded into memory, but that should be reasonable given the number of teams a hub might have and the size of
     # their model_output files

@@ -1,3 +1,4 @@
+import json
 import tempfile
 from pathlib import Path
 
@@ -16,3 +17,15 @@ def test_generate_json_files():
         json_files = _main(hub_config, output_dir)
         assert set(json_files) == {output_dir / 'wk-inc-flu-hosp_US_2022-10-22.json',
                                    output_dir / 'wk-inc-flu-hosp_01_2022-10-22.json'}
+
+        with open('tests/expected/example-complex-forecast-hub/forecasts/wk-inc-flu-hosp_US_2022-10-22.json') as exp_fp, \
+                open(output_dir / 'wk-inc-flu-hosp_US_2022-10-22.json') as act_fp:
+            exp_data = json.load(exp_fp)
+            act_data = json.load(act_fp)
+            assert act_data == exp_data
+
+        with open('tests/expected/example-complex-forecast-hub/forecasts/wk-inc-flu-hosp_01_2022-10-22.json') as exp_fp, \
+                open(output_dir / 'wk-inc-flu-hosp_01_2022-10-22.json') as act_fp:
+            exp_data = json.load(exp_fp)
+            act_data = json.load(act_fp)
+            assert act_data == exp_data
