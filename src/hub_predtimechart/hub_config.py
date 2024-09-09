@@ -37,17 +37,17 @@ class HubConfig:
             self.reference_date_col_name = ptc_config['reference_date_col_name']
             self.target_date_col_name = ptc_config['target_date_col_name']
             self.horizon_col_name = ptc_config['horizon_col_name']
+            self.initial_checked_models = ptc_config['initial_checked_models']
+            self.disclaimer = ptc_config['disclaimer']
 
         # set model_ids
-        model_ids = []
-        # for model_metadata_file in (hub_dir / 'model-metadata').glob('*.yml'):
+        self.model_id_to_metadata = {}
         for model_metadata_file in (list((hub_dir / 'model-metadata').glob('*.yml')) +
                                     list((hub_dir / 'model-metadata').glob('*.yaml'))):
             with open(model_metadata_file, 'r') as fp:
-                ptc_config = yaml.safe_load(fp)
-                model_id = f"{ptc_config['team_abbr']}-{ptc_config['model_abbr']}"
-                model_ids.append(model_id)
-        self.model_ids = sorted(model_ids)
+                model_metadata = yaml.safe_load(fp)
+                model_id = f"{model_metadata['team_abbr']}-{model_metadata['model_abbr']}"
+                self.model_id_to_metadata[model_id] = model_metadata
 
         # set task_ids
         tasks_file = self.hub_dir / 'hub-config' / 'tasks.json'
@@ -57,7 +57,8 @@ class HubConfig:
             self.task_ids = sorted(model_tasks_ele['task_ids'].keys())
 
         # set viz_task_ids and fetch_targets. recall: we assume there is only one target_metadata entry
-        metadata_target_keys = model_tasks_ele['target_metadata'][0]['target_keys']
+        target_metadata = model_tasks_ele['target_metadata'][0]
+        metadata_target_keys = target_metadata['target_keys']
         self.target_col_name = list(metadata_target_keys.keys())[0]
         self.viz_task_ids = sorted(set(self.task_ids) - {self.reference_date_col_name, self.target_date_col_name,
                                                          self.horizon_col_name, self.target_col_name})

@@ -39,7 +39,7 @@ def forecast_data_for_model_df(hub_config: HubConfig, model_df: pd.DataFrame, ta
 
     # groupby target_end_date
     forecasts = defaultdict(list)
-    for target_end_date, group in model_df.groupby('target_end_date'):
+    for target_end_date, group in model_df.groupby(hub_config.target_date_col_name):
         quantile_df = group.sort_values(by=['output_type_id'])[['output_type_id', 'value']]
         forecasts['target_end_date'].append(target_end_date)
         for output_type_id, value in quantile_df.itertuples(index=False):

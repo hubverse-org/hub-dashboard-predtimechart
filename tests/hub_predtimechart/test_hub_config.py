@@ -15,9 +15,11 @@ def test_hub_config_complex_forecast_hub():
     assert hub_config.reference_date_col_name == 'reference_date'
     assert hub_config.target_date_col_name == 'target_end_date'
     assert hub_config.horizon_col_name == 'horizon'
-    assert hub_config.model_ids == sorted(['Flusight-baseline', 'MOBS-GLEAM_FLUH', 'PSI-DICE'])
+    assert hub_config.initial_checked_models == ['Flusight-baseline']
+    assert hub_config.disclaimer == "Most forecasts have failed to reliably predict rapid changes in the trends of reported cases and hospitalizations. Due to this limitation, they should not be relied upon for decisions about the possibility or timing of rapid changes in trends."
+    assert (sorted(list(hub_config.model_id_to_metadata.keys())) ==
+            sorted(['Flusight-baseline', 'MOBS-GLEAM_FLUH', 'PSI-DICE']))
     assert hub_config.task_ids == sorted(['reference_date', 'target', 'horizon', 'location', 'target_end_date'])
-    assert hub_config.target_col_name == 'target'
     assert hub_config.target_col_name == 'target'
     assert hub_config.viz_task_ids == sorted(['location'])
     assert hub_config.fetch_targets == ['wk inc flu hosp']
@@ -37,7 +39,6 @@ def test_hub_config_complex_forecast_hub():
         "2022-12-17", "2022-12-24", "2022-12-31", "2023-01-07", "2023-01-14", "2023-01-21", "2023-01-28", "2023-02-04",
         "2023-02-11", "2023-02-18", "2023-02-25", "2023-03-04", "2023-03-11", "2023-03-18", "2023-03-25", "2023-04-01",
         "2023-04-08", "2023-04-15", "2023-04-22", "2023-04-29", "2023-05-06", "2023-05-13", "2023-05-20", "2023-05-27"]
-
     # todo xx others - see README.MD > Required hub configuration
 
 
@@ -51,7 +52,7 @@ def test_hub_config_complex_scenario_hub():
     assert hub_config.reference_date_col_name == 'origin_date'
     assert hub_config.target_date_col_name is None  # NB: invalid for predtimechart, which requires this column
     assert hub_config.horizon_col_name == 'horizon'
-    assert hub_config.model_ids == sorted(['HUBuni-simexamp', 'hubcomp-examp'])
+    assert sorted(list(hub_config.model_id_to_metadata.keys())) == sorted(['HUBuni-simexamp', 'hubcomp-examp'])
     assert hub_config.task_ids == sorted(['horizon', 'location', 'origin_date', 'scenario_id', 'target'])
     assert hub_config.target_col_name == 'target'
     assert hub_config.target_col_name == 'target'
@@ -151,6 +152,12 @@ def test_predtimechart_config_file_does_not_exist():
         hub_dir = Path('tests/hubs/no-ptc-config-hub')
         HubConfig(hub_dir)
     assert "predtimechart config file not found" in str(excinfo.value)
+
+
+@pytest.mark.skip(reason="todo")
+def test_predtimechart_config_file_validity():
+    # test predtimechart-config.yml validity. maybe use JSON Schema?
+    pass
 
 
 @pytest.mark.skip(reason="todo")
