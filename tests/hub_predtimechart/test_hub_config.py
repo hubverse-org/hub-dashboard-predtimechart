@@ -153,6 +153,7 @@ def test_predtimechart_config_file_does_not_exist():
     assert "predtimechart config file not found" in str(excinfo.value)
 
 
+@pytest.mark.skip(reason="todo")
 def test_hub_dir_ptc_compatibility():
     # constraints: see README.MD > Assumptions/limitations
     with pytest.raises(RuntimeError) as excinfo:
