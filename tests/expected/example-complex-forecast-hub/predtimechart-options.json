@@ -1,19 +1,9 @@
 {
   "target_variables": [
     {
-      "value": "death",
-      "text": "Deaths",
-      "plot_text": "Incident weekly deaths"
-    },
-    {
-      "value": "hosp",
-      "text": "Hospitalizations",
-      "plot_text": "Incident daily hospitalizations"
-    },
-    {
-      "value": "case",
-      "text": "Cases",
-      "plot_text": "Incident weekly cases"
+      "value": "wk inc flu hosp",
+      "text": "incident influenza hospitalizations",
+      "plot_text": "incident influenza hospitalizations"
     }
   ],
   "initial_target_var": "hosp",
@@ -92,9 +82,8 @@
   },
   "initial_as_of": "2024-04-27",
   "current_date": "2024-04-27",
-  "models": [
-    "COVIDhub-ensemble", "COVIDhub-baseline", "AIpert-pwllnod", "AMM-EpiInvert", "BPagano-RtDriven", "CEID-Walk", "CEPH-Rtrend_covid", "cfa-wwrenewal", "CMU-TimeSeries", "Columbia_UNC-SurvCon", "Covid19Sim-Simulator", "CovidActNow-SEIR_CAN", "CovidAnalytics-DELPHI", "COVIDhub_CDC-ensemble", "COVIDhub-4_week_ensemble", "COVIDhub-trained_ensemble", "CU-select", "CUB_PopCouncil-SLSTM", "DDS-NBDS", "epiforecasts-ensemble1", "FDANIHASU-Sweight", "FRBSF_Wilson-Econometric", "Google_Harvard-CPF", "GT_CHHS-COVID19", "GT-DeepCOVID", "IEM_MED-CovidProject", "IHME-CurveFit", "Imperial-ensemble2", "IowaStateLW-STEM", "IQVIA_ACOE-STAN", "IUPUI-HkPrMobiDyR", "JBUD-HMXK", "JCB-PRM", "JHU_CSSE-DECOM", "JHU_IDD-CovidSP", "JHU_UNC_GAS-StatMechPool", "JHUAPL-Bucky", "JHUAPL-Gecko", "JHUAPL-Morris", "JHUAPL-SLPHospEns", "JHUAPLTDWG-ICATTML", "Karlen-pypm", "KITmetricslab-select_ensemble", "LANL-GrowthRate", "LNQ-ens1", "LosAlamos_NAU-CModel_SDVaxVar", "LUcompUncertLab-VAR_3streams", "Microsoft-DeepSTIA", "MIT_CritData-GBCF", "MIT_ISOLAT-Mixtures", "MIT-Cassandra", "MITCovAlliance-SIR", "MOBS-GLEAM_COVID", "MSRA-DeepST", "MUNI-ARIMA", "NotreDame-FRED", "NotreDame-mobility", "OHT_JHU-nbxd", "OliverWyman-Navigator", "OneQuietNight-ML", "PR_UMD-CF_RepTiLe", "prolix-euclidean", "PSI-DICE", "PSI-DRAFT", "QJHong-Encounter", "Quantori-Multiagents", "RobertWalraven-ESG", "RPI_UW-Mob_Collision", "SDSC_ISG-TrendModel", "SGroup-RandomForest", "SigSci-TS", "SteveMcConnell-CovidComplete", "SWC-TerminusCM", "UA-EpiCovDA", "UCF-AEM", "UChicago-CovidIL", "UChicagoCHATTOPADHYAY-UnIT", "UCLA-SuEIR", "UCM_MESALab-FoGSEIR", "UCSB-ACTS", "UCSD_NEU-DeepGLEAM", "UMass-gbq", "UMass-MechBayes", "UMass-sarix", "UMass-trends_ensemble", "UMich-RidgeTfReg", "UpstateSU-GRU", "USACE-ERDC_SEIR", "USC-SI_kJalpha", "UT-Mobility", "UT-Osiris", "UVA-Ensemble", "Wadhwani_AI-BayesOpt", "YYG-ParamSearch"],
-  "initial_checked_models": ["COVIDhub-ensemble"],
-  "disclaimer": "Most forecasts have failed to reliably predict rapid changes in the trends of reported cases and hospitalizations. Due to this limitation, they should not be relied upon for decisions about the possibility or timing of rapid changes in trends. Ensemble case forecasts were discontinued as of February 20, 2023 and death forecasts were discontinued as of March 6, 2023.",
+  "models": ["Flusight-baseline", "MOBS-GLEAM_FLUH", "PSI-DICE"],
+  "initial_checked_models": ["Flusight-baseline"],
+  "disclaimer": "Most forecasts have failed to reliably predict rapid changes in the trends of reported cases and hospitalizations. Due to this limitation, they should not be relied upon for decisions about the possibility or timing of rapid changes in trends.",
   "initial_xaxis_range": null
 }

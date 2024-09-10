@@ -42,7 +42,7 @@ def _main(hub_config: HubConfig, output_dir: Path):
     for reference_date in hub_config.fetch_reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
         # set model_id_to_df
         model_id_to_df: dict[str, pd.DataFrame] = {}
-        for model_id in hub_config.model_ids:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
+        for model_id in hub_config.model_id_to_metadata:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
             model_output_file = hub_config.model_output_file_for_ref_date(model_id, reference_date)
             if model_output_file:
                 model_id_to_df[model_id] = pd.read_csv(model_output_file, usecols=df_cols_to_use)
