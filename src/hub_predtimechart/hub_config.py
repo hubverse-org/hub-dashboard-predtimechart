@@ -56,13 +56,15 @@ class HubConfig:
             model_tasks_ele = tasks['rounds'][self.rounds_idx]['model_tasks'][self.model_tasks_idx]
             self.task_ids = sorted(model_tasks_ele['task_ids'].keys())
 
-        # set viz_task_ids and fetch_targets. recall: we assume there is only one target_metadata entry
+        # set viz_task_ids and fetch_targets. recall: we assume there is only one target_metadata entry, only one
+        # entry under its `target_keys`
         target_metadata = model_tasks_ele['target_metadata'][0]
         metadata_target_keys = target_metadata['target_keys']
         self.target_col_name = list(metadata_target_keys.keys())[0]
         self.viz_task_ids = sorted(set(self.task_ids) - {self.reference_date_col_name, self.target_date_col_name,
                                                          self.horizon_col_name, self.target_col_name})
-        self.fetch_targets = list(metadata_target_keys.values())
+        self.fetch_target_id = list(metadata_target_keys.values())[0]
+        self.fetch_target_name = target_metadata['target_name']
 
         # set fetch_task_ids
         self.fetch_task_ids = defaultdict(list)  # union of task_ids required and optional fields. each can be null

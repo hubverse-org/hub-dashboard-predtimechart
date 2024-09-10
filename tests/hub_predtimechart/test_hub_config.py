@@ -22,7 +22,8 @@ def test_hub_config_complex_forecast_hub():
     assert hub_config.task_ids == sorted(['reference_date', 'target', 'horizon', 'location', 'target_end_date'])
     assert hub_config.target_col_name == 'target'
     assert hub_config.viz_task_ids == sorted(['location'])
-    assert hub_config.fetch_targets == ['wk inc flu hosp']
+    assert hub_config.fetch_target_id == 'wk inc flu hosp'
+    assert hub_config.fetch_target_name == 'incident influenza hospitalizations'
     assert hub_config.fetch_task_ids == {
         'location': ["US", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13", "15", "16", "17", "18",
                      "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34",
@@ -57,7 +58,8 @@ def test_hub_config_complex_scenario_hub():
     assert hub_config.target_col_name == 'target'
     assert hub_config.target_col_name == 'target'
     assert hub_config.viz_task_ids == sorted(['location', 'scenario_id'])
-    assert hub_config.fetch_targets == ['inc death']
+    assert hub_config.fetch_target_id == 'inc death'
+    assert hub_config.fetch_target_name == 'Incident deaths'
     assert hub_config.fetch_task_ids == {
         'location': ['US', '01', '02', '04', '05', '06', '08', '09', '10', '11', '12', '13', '15', '16', '17', '18',
                      '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34',

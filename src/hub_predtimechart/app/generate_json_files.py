@@ -1,4 +1,3 @@
-import itertools
 import json
 import re
 from pathlib import Path
@@ -51,9 +50,9 @@ def _main(hub_config: HubConfig, output_dir: Path):
             continue
 
         # iterate over each (target X task_ids) combination, outputting to the corresponding json file
-        for target, task_ids_tuple in itertools.product(hub_config.fetch_targets, hub_config.fetch_task_ids_tuples):
-            json_file = generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, task_ids_tuple,
-                                                    reference_date)
+        for task_ids_tuple in hub_config.fetch_task_ids_tuples:
+            json_file = generate_forecast_json_file(hub_config, model_id_to_df, output_dir, hub_config.fetch_target_id,
+                                                    task_ids_tuple, reference_date)
             if json_file:
                 json_files.append(json_file)
 
