@@ -31,7 +31,6 @@ Initially the visualization will have these limitations:
 - The hub has `reference_date`|`origin_date` and `target_date`|`target_end_date` task IDs in `tasks.json > rounds > model_tasks > task_ids`.
 - Only forecast data will be plotted, not target data.
 - Model metadata must contain a boolean `designated_model` field.
-- For now only handles CSV files and not parquet ones.
 - Only one `target_keys` key in `tasks.json > /rounds/_/model_tasks/_/target_metadata/_/target_keys/` is supported, and only one entry within it.
 - We assume all hub files have been validated.
 - For the `task_ids` entry in predtimechart config option generation, we use `value` for both `value` and `text`, rather than asking the user to provide a mapping from `value` to `text`. A solution is to require that mapping in `predtimechart-config.yml`.
@@ -80,6 +79,8 @@ We plan to primarily use https://github.com/hubverse-org/example-complex-forecas
 - Which model output formats will we support? The hub docs mention CSV and parquet, but that others (e.g., zipped files) might be supported.
 - Regarding naming the .json files, should we be influenced by Arrow's partitioning scheme where it names intermediate directories according to filtering.
 - We might need separate apps to update config options vs. visualization data (json files) for the case where the user has changed predtimechart-config.yml independent of a round closing. 
+- Should we filter out `hub_config.horizon_col_name == 0` ?
+- Should `forecast_data_for_model_df()`'s `quantile_levels` be stored in a config file somewhere?
 
 # Python local dev setup
 

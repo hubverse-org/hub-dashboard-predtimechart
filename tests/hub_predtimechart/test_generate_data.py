@@ -15,7 +15,7 @@ def test_json_file_name():
     assert json_file_name('wk inc flu hosp', ('US',), '2022-10-22') == 'wk-inc-flu-hosp_US_2022-10-22.json'
 
     # case: isForecast, targetKey, taskIDs, referenceDate: True, 'wk inc flu hosp', {location: 01}, '2022-10-22'
-    assert json_file_name('wk inc flu hosp', ('01®',), '2022-10-22') == 'wk-inc-flu-hosp_01_2022-10-22.json'
+    assert json_file_name('wk inc flu hosp', ('01',), '2022-10-22') == 'wk-inc-flu-hosp_01_2022-10-22.json'
 
 
 def test_forecast_data_for_model_df_complex_forecast_hub_US():

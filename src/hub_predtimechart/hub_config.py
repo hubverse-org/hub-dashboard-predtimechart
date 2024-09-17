@@ -2,6 +2,7 @@ import itertools
 import json
 from collections import defaultdict
 from pathlib import Path
+from typing import Optional
 
 import yaml
 
@@ -83,14 +84,19 @@ class HubConfig:
 
         # set fetch_reference_dates
         ref_date_task_id = model_tasks_ele['task_ids'][self.reference_date_col_name]
-        self.fetch_reference_dates = (ref_date_task_id['required'] if ref_date_task_id['required'] else []) + \
-                                     (ref_date_task_id['optional'] if ref_date_task_id['optional'] else [])
+        self.reference_dates = (ref_date_task_id['required'] if ref_date_task_id['required'] else []) + \
+                               (ref_date_task_id['optional'] if ref_date_task_id['optional'] else [])
 
 
-    def model_output_file_for_ref_date(self, model_id: str, reference_date: str):
+    def model_output_file_for_ref_date(self, model_id: str, reference_date: str) -> Optional[Path]:
         """
         Returns a Path to the model output file corresponding to `model_id` and `reference_date`. Returns None if none
         found.
         """
-        output_file_p = self.hub_dir / 'model-output' / model_id / f"{reference_date}-{model_id}.csv"
-        return output_file_p if output_file_p.exists() else None
+        poss_output_files = [self.hub_dir / 'model-output' / model_id / f"{reference_date}-{model_id}.csv",
+                             self.hub_dir / 'model-output' / model_id / f"{reference_date}-{model_id}.parquet"]
+        for poss_output_file in poss_output_files:
+            if poss_output_file.exists():
+                return poss_output_file
+
+        return None
