@@ -5,6 +5,10 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
+
+from hub_predtimechart.schema import ptc_config_schema
 
 
 class HubConfig:
@@ -30,9 +34,14 @@ class HubConfig:
         if not ptc_config_file.exists():
             raise RuntimeError(f"predtimechart config file not found: {ptc_config_file}")
 
-        # load config settings from predtimechart config file
+        # load config settings from the predtimechart config file, first validating the file against the schema
         with open(ptc_config_file, 'r') as fp:
             ptc_config = yaml.safe_load(fp)
+            try:
+                _validate_predtimechart_config(ptc_config)
+            except ValidationError as ve:
+                raise RuntimeError(f"invalid predtimechart-config.yml. error='{ve}'")
+
             self.rounds_idx = ptc_config['rounds_idx']
             self.model_tasks_idx = ptc_config['model_tasks_idx']
             self.reference_date_col_name = ptc_config['reference_date_col_name']
@@ -100,3 +109,13 @@ class HubConfig:
                 return poss_output_file
 
         return None
+
+
+def _validate_predtimechart_config(ptc_config: dict):
+    """
+    Validates `ptc_config` against the schema in schema.py.
+
+    :param ptc_config: dict loaded from a 'predtimechart-config.yml' file
+    :raises ValidationError: if `ptc_config` is not valid
+    """
+    validate(ptc_config, ptc_config_schema)
