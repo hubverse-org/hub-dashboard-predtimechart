@@ -30,8 +30,9 @@ def main(hub_dir, output_dir, options_file):
     :param options_file: a Path to output the predtimechart config file to
     """
     logger.info(f"main({hub_dir=}, {output_dir=}): entered")
-    json_files = _generate_json_files(HubConfig(Path(hub_dir)), Path(output_dir))
-    _generate_options_file(HubConfig(Path(hub_dir)), Path(options_file))
+    hub_config = HubConfig(Path(hub_dir))
+    json_files = _generate_json_files(hub_config, Path(output_dir))
+    _generate_options_file(hub_config, Path(options_file))
     logger.info(f"main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. "
                 f"config file generated: {options_file}")
 

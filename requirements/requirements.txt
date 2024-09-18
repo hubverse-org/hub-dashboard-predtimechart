@@ -4,12 +4,20 @@
 #
 #    pip-compile --extra=dev --output-file=requirements/requirements.txt pyproject.toml
 #
+attrs==24.2.0
+    # via
+    #   jsonschema
+    #   referencing
 build==1.2.1
     # via pip-tools
 click==8.1.7
     # via pip-tools
 iniconfig==2.0.0
     # via pytest
+jsonschema==4.23.0
+    # via hub-dashboard-predtimechart (pyproject.toml)
+jsonschema-specifications==2023.12.1
+    # via jsonschema
 numpy==2.1.0
     # via
     #   pandas
@@ -38,6 +46,14 @@ pytz==2024.1
     # via pandas
 pyyaml==6.0.2
     # via hub-dashboard-predtimechart (pyproject.toml)
+referencing==0.35.1
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
+rpds-py==0.20.0
+    # via
+    #   jsonschema
+    #   referencing
 six==1.16.0
     # via python-dateutil
 structlog==24.4.0

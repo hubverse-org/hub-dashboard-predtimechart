@@ -15,6 +15,7 @@ dependencies = [
     "pyyaml",
     "structlog",
     "pyarrow",
+    "jsonschema"
 ]
 
 [project.optional-dependencies]

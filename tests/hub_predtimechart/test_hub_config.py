@@ -1,8 +1,12 @@
+import copy
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
+import yaml
+from jsonschema.exceptions import ValidationError
 
-from hub_predtimechart.hub_config import HubConfig
+from hub_predtimechart.hub_config import HubConfig, _validate_predtimechart_config
 
 
 def test_hub_config_complex_forecast_hub():
@@ -50,7 +54,7 @@ def test_hub_config_complex_scenario_hub():
     assert hub_config.rounds_idx == 1  # 'rounds'[1]
     assert hub_config.model_tasks_idx == 0  # 'rounds'[1]['model_tasks'][0]
     assert hub_config.reference_date_col_name == 'origin_date'
-    assert hub_config.target_date_col_name is None  # NB: invalid for predtimechart, which requires this column
+    assert hub_config.target_date_col_name == 'n/a'  # NB: this hub is invalid for predtimechart, so test placeholder
     assert hub_config.horizon_col_name == 'horizon'
     assert sorted(list(hub_config.model_id_to_metadata.keys())) == sorted(['HUBuni-simexamp', 'hubcomp-examp'])
     assert hub_config.task_ids == sorted(['horizon', 'location', 'origin_date', 'scenario_id', 'target'])
@@ -141,35 +145,57 @@ def test_model_output_file_for_ref_date():
     assert file is None
 
 
-def test_hub_dir_does_not_exist():
-    with pytest.raises(RuntimeError) as excinfo:
+def test_hub_dir_existence():
+    with pytest.raises(RuntimeError, match="hub_dir not found"):
         hub_dir = Path('tests/hubs/example-complex-forecast-hub')
         HubConfig(hub_dir / 'bad-dir')
-    assert "hub_dir not found" in str(excinfo.value)
 
 
-def test_predtimechart_config_file_does_not_exist():
-    with pytest.raises(RuntimeError) as excinfo:
+def test_predtimechart_config_file_existence():
+    with pytest.raises(RuntimeError, match="predtimechart config file not found"):
         hub_dir = Path('tests/hubs/no-ptc-config-hub')
         HubConfig(hub_dir)
-    assert "predtimechart config file not found" in str(excinfo.value)
 
 
-@pytest.mark.skip(reason="todo")
 def test_predtimechart_config_file_validity():
-    # test predtimechart-config.yml validity. maybe use JSON Schema?
-    pass
+    """
+    tests predtimechart-config.yml validitiy. NB: for valid cases: example-complex-forecast-hub is valid and is
+    checked elsewhere
+    """
+    # test a known invalid hub
+    with pytest.raises(RuntimeError, match="invalid predtimechart-config.yml"):
+        HubConfig(Path('tests/hubs/invalid-ptc-config-hub'))
+
+    # test that HubConfig() calls `_validate_predtimechart_config()`, and then test against that function directly
+    with patch('hub_predtimechart.hub_config._validate_predtimechart_config') as validate_mock:
+        HubConfig(Path('tests/hubs/example-complex-forecast-hub'))
+        validate_mock.assert_called_once()
+
+    # get a valid config file to work with and then invalidate it in a few different ways to make sure schema.json is in
+    # play
+    with open('tests/hubs/example-complex-forecast-hub/hub-config/predtimechart-config.yml') as fp:
+        valid_ptc_config = yaml.safe_load(fp)
+
+    # case: missing property
+    ptc_config_copy = copy.deepcopy(valid_ptc_config)
+    del ptc_config_copy['rounds_idx']
+    with pytest.raises(ValidationError, match="'rounds_idx' is a required property"):
+        _validate_predtimechart_config(ptc_config_copy)
+
+    # case: empty string property
+    ptc_config_copy = copy.deepcopy(valid_ptc_config)
+    ptc_config_copy['reference_date_col_name'] = ''
+    with pytest.raises(ValidationError, match="\'\' should be non-empty"):
+        _validate_predtimechart_config(ptc_config_copy)
 
 
 @pytest.mark.skip(reason="todo")
 def test_hub_dir_ptc_compatibility():
     # constraints: see README.MD > Assumptions/limitations
-    with pytest.raises(RuntimeError) as excinfo:
+    with pytest.raises(RuntimeError, match="hub is incompatible with predtimechart"):
         hub_dir = Path('tests/hubs/example-complex-scenario-hub')
         HubConfig(hub_dir)
-    assert "hub is incompatible with predtimechart" in str(excinfo.value)
 
-    with pytest.raises(RuntimeError) as excinfo:
+    with pytest.raises(RuntimeError, match="hub is incompatible with predtimechart"):
         hub_dir = Path('tests/hubs/no-ptc-config-hub')
         HubConfig(hub_dir)
-    assert "hub is incompatible with predtimechart" in str(excinfo.value)
