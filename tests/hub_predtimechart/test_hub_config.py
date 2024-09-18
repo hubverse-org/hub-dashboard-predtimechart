@@ -8,7 +8,6 @@ from hub_predtimechart.hub_config import HubConfig
 def test_hub_config_complex_forecast_hub():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
     hub_config = HubConfig(hub_dir)
-
     assert hub_config.hub_dir == hub_dir
     assert hub_config.rounds_idx == 0  # 'rounds'[0]
     assert hub_config.model_tasks_idx == 2  # 'rounds'[0]['model_tasks'][2]
@@ -35,7 +34,7 @@ def test_hub_config_complex_forecast_hub():
         ("27",), ("28",), ("29",), ("30",), ("31",), ("32",), ("33",), ("34",), ("35",), ("36",), ("37",), ("38",),
         ("39",), ("40",), ("41",), ("42",), ("44",), ("45",), ("46",), ("47",), ("48",), ("49",), ("50",), ("51",),
         ("53",), ("54",), ("55",), ("56",), ("72",)]
-    assert hub_config.fetch_reference_dates == [
+    assert hub_config.reference_dates == [
         "2022-10-22", "2022-10-29", "2022-11-05", "2022-11-12", "2022-11-19", "2022-11-26", "2022-12-03", "2022-12-10",
         "2022-12-17", "2022-12-24", "2022-12-31", "2023-01-07", "2023-01-14", "2023-01-21", "2023-01-28", "2023-02-04",
         "2023-02-11", "2023-02-18", "2023-02-25", "2023-03-04", "2023-03-11", "2023-03-18", "2023-03-25", "2023-04-01",
@@ -120,7 +119,7 @@ def test_hub_config_complex_scenario_hub():
         ('55', 'A-2022-05-09'), ('55', 'B-2022-05-09'), ('55', 'C-2022-05-09'), ('55', 'D-2022-05-09'),
         ('56', 'A-2022-05-09'), ('56', 'B-2022-05-09'), ('56', 'C-2022-05-09'), ('56', 'D-2022-05-09')
     ]
-    assert hub_config.fetch_reference_dates == ['2022-06-05']
+    assert hub_config.reference_dates == ['2022-06-05']
 
 
 def test_model_output_file_for_ref_date():

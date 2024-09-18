@@ -7,6 +7,7 @@ import pandas as pd
 import structlog
 
 from hub_predtimechart.generate_data import forecast_data_for_model_df
+from hub_predtimechart.generate_options import ptc_options_for_hub
 from hub_predtimechart.hub_config import HubConfig
 from hub_predtimechart.util.logs import setup_logging
 
@@ -18,19 +19,31 @@ logger = structlog.get_logger()
 @click.command()
 @click.argument('hub_dir', type=click.Path(file_okay=False, exists=True))
 @click.argument('output_dir', type=click.Path(file_okay=False, exists=True))
-def main(hub_dir, output_dir):
+@click.argument('options_file', type=click.Path(file_okay=True, exists=False))
+def main(hub_dir, output_dir, options_file):
     """
-    An app that generates predtimechart forecast json files from `hub_dir`, outputting to `output_dir`.
+    An app that generates predtimechart forecast json files from `hub_dir`, outputting to `output_dir`, and generates a
+    predtimechart options json file that's saved to `options_file`.
 
     :param hub_dir: a Path of a hub to generate forecast json files from
     :param output_dir: a Path to output forecast json files to
+    :param options_file: a Path to output the predtimechart config file to
     """
     logger.info(f"main({hub_dir=}, {output_dir=}): entered")
-    json_files = _main(HubConfig(Path(hub_dir)), Path(output_dir))
-    logger.info(f"main(): done: {len(json_files)} files generated: {[str(_) for _ in json_files]}")
+    json_files = _generate_json_files(HubConfig(Path(hub_dir)), Path(output_dir))
+    _generate_options_file(HubConfig(Path(hub_dir)), Path(options_file))
+    logger.info(f"main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. "
+                f"config file generated: {options_file}")
 
 
-def _main(hub_config: HubConfig, output_dir: Path):
+#
+# _generate_json_files() and helpers
+#
+
+def _generate_json_files(hub_config: HubConfig, output_dir: Path) -> list[Path]:
+    """
+    Generates forecast json files from `hub_config`. Returns a list of Paths of the generated files.
+    """
     # loop over every (reference_date X model_id) combination. the nested order of reference_date, model_id ensures we
     # open each model_output file only once. the tradeoff is that all model_output files for a particular reference_date
     # are loaded into memory, but that should be reasonable given the number of teams a hub might have and the size of
@@ -38,13 +51,19 @@ def _main(hub_config: HubConfig, output_dir: Path):
     df_cols_to_use = ([hub_config.target_col_name] + hub_config.viz_task_ids +
                       [hub_config.target_date_col_name, 'output_type', 'output_type_id', 'value'])
     json_files = []  # list of files actually loaded
-    for reference_date in hub_config.fetch_reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
+    for reference_date in hub_config.reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
         # set model_id_to_df
         model_id_to_df: dict[str, pd.DataFrame] = {}
         for model_id in hub_config.model_id_to_metadata:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
             model_output_file = hub_config.model_output_file_for_ref_date(model_id, reference_date)
             if model_output_file:
-                model_id_to_df[model_id] = pd.read_csv(model_output_file, usecols=df_cols_to_use)
+                if model_output_file.suffix == '.csv':
+                    model_id_to_df[model_id] = pd.read_csv(model_output_file, usecols=df_cols_to_use)
+                elif model_output_file.suffix in ['.parquet', '.pqt']:
+                    model_id_to_df[model_id] = pd.read_parquet(model_output_file, columns=df_cols_to_use)
+                else:
+                    raise RuntimeError(f"unsupported model output file type: {model_output_file!r}. "
+                                       f"Only .csv and .parquet are supported")
 
         if not model_id_to_df:  # no model outputs for reference_date
             continue
@@ -82,10 +101,6 @@ def generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, 
     return None
 
 
-#
-# json_file_name()
-#
-
 def json_file_name(target: str, task_ids_tuple: tuple[str], reference_date: str) -> str:
     """
     Top level function that returns a file name that encodes the passed arguments. Args are per the `_fectchData()`
@@ -100,24 +115,30 @@ def json_file_name(target: str, task_ids_tuple: tuple[str], reference_date: str)
     :param reference_date: ""
     :return: a "valid" file name
     """
-    return _get_valid_filename(f"{target}_{'_'.join(task_ids_tuple)}_{reference_date}.json")
 
 
-# based on get_valid_filename() from https://github.com/django/django/blob/main/django/utils/text.py
-def _get_valid_filename(name):
+    def replace_chars(the_string: str) -> str:
+        # replace all non-alphanumeric characters, except dashes and underscores, with a dash
+        return re.sub(r'[^a-zA-Z0-9-_]', '-', the_string)
+
+
+    target_str = replace_chars(target)
+    task_ids_str = replace_chars('_'.join(task_ids_tuple))
+    return f"{target_str}_{task_ids_str}_{reference_date}.json"
+
+
+#
+# _generate_options_file()
+#
+
+def _generate_options_file(hub_config: HubConfig, options_file: Path):
     """
-    Return the given string converted to a string that can be used for a clean
-    filename. Remove leading and trailing spaces; convert other spaces to
-    underscores; and remove anything that is not an alphanumeric, dash,
-    underscore, or dot.
-    >>> _get_valid_filename("john's portrait in 2004.jpg")
-    'johns_portrait_in_2004.jpg'
+    Generates a predtimechart config .json file from `hub_config` as documented at `ptc_options_for_hub()`, saving it to
+    `options_file`. NB: `options_file` is overwritten if already present.
     """
-    s = str(name).strip().replace(" ", "-")  # was "_"
-    s = re.sub(r"(?u)[^-\w.]", "", s)
-    if s in {"", ".", ".."}:
-        raise RuntimeError("Could not derive file name from '%s'" % name)  # was: SuspiciousFileOperation
-    return s
+    options = ptc_options_for_hub(hub_config)
+    with open(options_file, 'w') as fp:
+        json.dump(options, fp, indent=4)
 
 
 #

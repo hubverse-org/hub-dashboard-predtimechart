@@ -34,7 +34,8 @@ def forecast_data_for_model_df(hub_config: HubConfig, model_df: pd.DataFrame, ta
 
     model_df = model_df.query("output_type == 'quantile'")
 
-    quantile_levels = (0.025, 0.25, 0.5, 0.75, 0.975)  # todo xx should be stored in a config file somewhere?
+    # note that we include both strings and numbers b/c we can't depend on the output_type_id being one or the other
+    quantile_levels = (0.025, 0.25, 0.5, 0.75, 0.975, '0.025', '0.25', '0.5', '0.75', '0.975')
     model_df = model_df.query(f"output_type_id in {quantile_levels}")
 
     # groupby target_end_date
