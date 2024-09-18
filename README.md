@@ -36,6 +36,7 @@ Initially the visualization will have these limitations:
 - For the `task_ids` entry in predtimechart config option generation, we use `value` for both `value` and `text`, rather than asking the user to provide a mapping from `value` to `text`. A solution is to require that mapping in `predtimechart-config.yml`.
 - The `initial_as_of` and `current_date` config fields are the last of `hub_config.fetch_reference_dates`.
 - The `initial_task_ids` config field is the first `task_ids` `value`.
+- The following quantile levels (`output_type_id`s) are present in the data: 0.025, 0.25, 0.5, 0.75, 0.975
 - others: @todo
 
 # Required hub configuration
@@ -98,14 +99,14 @@ $ pipenv --python $(pyenv which python)
 
 ```bash
 $ pipenv install pip-tools  # for `pip-compile`
-$ pipenv run pip-compile --extra=dev --output-file=requirements/requirements-dev.txt pyproject.toml
+$ pipenv run pip-compile --extra=dev --output-file=requirements/requirements.txt pyproject.toml
 ```
 
 ## Install required packages
 
 ```bash
 $ cd <this repo>
-$ pipenv install -r requirements/requirements-dev.txt -e .
+$ pipenv install -r requirements/requirements.txt -e .
 ```
 
 ## Run the tests and application

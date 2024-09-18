@@ -59,7 +59,7 @@ def _generate_json_files(hub_config: HubConfig, output_dir: Path) -> list[Path]:
             if model_output_file:
                 if model_output_file.suffix == '.csv':
                     model_id_to_df[model_id] = pd.read_csv(model_output_file, usecols=df_cols_to_use)
-                elif model_output_file.suffix == '.parquet':
+                elif model_output_file.suffix in ['.parquet', '.pqt']:
                     model_id_to_df[model_id] = pd.read_parquet(model_output_file, columns=df_cols_to_use)
                 else:
                     raise RuntimeError(f"unsupported model output file type: {model_output_file!r}. "
