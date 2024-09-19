@@ -20,17 +20,21 @@ logger = structlog.get_logger()
 @click.argument('hub_dir', type=click.Path(file_okay=False, exists=True))
 @click.argument('output_dir', type=click.Path(file_okay=False, exists=True))
 @click.argument('options_file', type=click.Path(file_okay=True, exists=False))
-def main(hub_dir, output_dir, options_file):
+@click.argument('conf_file', type=click.Path(file_okay=True, exists=False))
+def main(hub_dir, output_dir, options_file, conf_file):
     """
     An app that generates predtimechart forecast json files from `hub_dir`, outputting to `output_dir`, and generates a
     predtimechart options json file that's saved to `options_file`.
 
-    :param hub_dir: a Path of a hub to generate forecast json files from
-    :param output_dir: a Path to output forecast json files to
-    :param options_file: a Path to output the predtimechart config file to
+    | :param hub_dir: a Path of a hub to generate forecast json files from
+    | :param output_dir: a Path to output forecast json files to
+    | :param options_file: a Path to output the predtimechart config file to
+    | :param conf_file: (optional) a Path to a `predtimechart-config.yaml` file.
+    if this is unset, it is expected to be in `hub-config/predtimechart-config.yaml`
+    as a subdirectory of `hub_dir`.
     """
     logger.info(f"main({hub_dir=}, {output_dir=}): entered")
-    hub_config = HubConfig(Path(hub_dir))
+    hub_config = HubConfig(Path(hub_dir), Path(conf_file))
     json_files = _generate_json_files(hub_config, Path(output_dir))
     _generate_options_file(hub_config, Path(options_file))
     logger.info(f"main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. "

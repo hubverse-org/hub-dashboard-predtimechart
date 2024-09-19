@@ -17,7 +17,7 @@ class HubConfig:
     """
 
 
-    def __init__(self, hub_dir: Path):
+    def __init__(self, hub_dir: Path, conf_file: None):
         """
         :param hub_dir: Path to a hub's root directory. see: https://hubverse.io/en/latest/user-guide/hub-structure.html
         """
@@ -30,7 +30,10 @@ class HubConfig:
         self.hub_dir = hub_dir
 
         # check for predtimechart config file
-        ptc_config_file = self.hub_dir / 'hub-config' / 'predtimechart-config.yml'
+        if conf_file is not None:
+            ptc_config_file = conf_file
+        else:
+            ptc_config_file = self.hub_dir / 'hub-config' / 'predtimechart-config.yml'
         if not ptc_config_file.exists():
             raise RuntimeError(f"predtimechart config file not found: {ptc_config_file}")
 
