@@ -11,7 +11,7 @@ def test_generate_json_files(tmp_path):
     An integration test of `generate_json_files.py`'s `_generate_json_files()`.
     """
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir=hub_dir)
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     output_dir = tmp_path
     json_files = _generate_json_files(hub_config, output_dir)
     assert set(json_files) == {output_dir / 'wk-inc-flu-hosp_US_2022-10-22.json',
@@ -33,7 +33,7 @@ def test_generate_options_file(tmp_path):
     An integration test of `generate_json_files.py`'s `_generate_options_file()`.
     """
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir=hub_dir)
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     ptc_options = tmp_path / 'ptc_options'
     _generate_options_file(hub_config, ptc_options)
     with open(ptc_options) as act_options_fp, \

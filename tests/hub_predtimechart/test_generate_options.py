@@ -7,7 +7,7 @@ from hub_predtimechart.hub_config import HubConfig
 
 def test_generate_options_complex_forecast_hub():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir=hub_dir)
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     with open('tests/expected/example-complex-forecast-hub/predtimechart-options.json') as fp:
         exp_options = json.load(fp)
     act_options = ptc_options_for_hub(hub_config)

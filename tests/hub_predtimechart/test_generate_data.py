@@ -20,7 +20,7 @@ def test_json_file_name():
 
 def test_forecast_data_for_model_df_complex_forecast_hub_US():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir=hub_dir)
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
 
     with open('tests/expected/example-complex-forecast-hub/forecasts/wk-inc-flu-hosp_US_2022-10-22.json') as fp:
         exp_data = json.load(fp)
@@ -45,7 +45,7 @@ def test_forecast_data_for_model_df_complex_forecast_hub_US():
 
 def test_forecast_data_for_model_df_complex_forecast_hub_01():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir=hub_dir)
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
 
     with open('tests/expected/example-complex-forecast-hub/forecasts/wk-inc-flu-hosp_01_2022-10-22.json') as fp:
         exp_data = json.load(fp)
@@ -70,7 +70,7 @@ def test_forecast_data_for_model_df_complex_forecast_hub_01():
 
 def test_forecast_data_for_model_df_no_data():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir=hub_dir)
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
 
     model_output_file = hub_dir / 'model-output/Flusight-baseline/2022-10-22-Flusight-baseline.csv'
     act_data = forecast_data_for_model_df(hub_config, pd.read_csv(model_output_file), 'wk inc flu hosp', ('01',))

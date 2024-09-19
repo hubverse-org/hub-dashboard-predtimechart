@@ -17,9 +17,11 @@ class HubConfig:
     """
 
 
-    def __init__(self, hub_dir: Path, conf_file: None):
+    def __init__(self, hub_dir: Path, ptc_config_file: Path):
         """
         :param hub_dir: Path to a hub's root directory. see: https://hubverse.io/en/latest/user-guide/hub-structure.html
+        :param ptc_config_file: (input) a file Path to a `predtimechart-config.yaml` file that specifies how to process
+            `hub_dir` to get predtimechart output
         """
         super().__init__()
 
@@ -30,10 +32,6 @@ class HubConfig:
         self.hub_dir = hub_dir
 
         # check for predtimechart config file
-        if conf_file is not None:
-            ptc_config_file = conf_file
-        else:
-            ptc_config_file = self.hub_dir / 'hub-config' / 'predtimechart-config.yml'
         if not ptc_config_file.exists():
             raise RuntimeError(f"predtimechart config file not found: {ptc_config_file}")
 
@@ -43,7 +41,7 @@ class HubConfig:
             try:
                 _validate_predtimechart_config(ptc_config)
             except ValidationError as ve:
-                raise RuntimeError(f"invalid predtimechart-config.yml. error='{ve}'")
+                raise RuntimeError(f"invalid ptc_config_file. error='{ve}'")
 
             self.rounds_idx = ptc_config['rounds_idx']
             self.model_tasks_idx = ptc_config['model_tasks_idx']
@@ -55,8 +53,8 @@ class HubConfig:
 
         # set model_ids
         self.model_id_to_metadata = {}
-        for model_metadata_file in (list((hub_dir / 'model-metadata').glob('*.yml')) +
-                                    list((hub_dir / 'model-metadata').glob('*.yaml'))):
+        for model_metadata_file in (list((self.hub_dir / 'model-metadata').glob('*.yml')) +
+                                    list((self.hub_dir / 'model-metadata').glob('*.yaml'))):
             with open(model_metadata_file, 'r') as fp:
                 model_metadata = yaml.safe_load(fp)
                 model_id = f"{model_metadata['team_abbr']}-{model_metadata['model_abbr']}"

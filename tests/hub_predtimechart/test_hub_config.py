@@ -11,7 +11,7 @@ from hub_predtimechart.hub_config import HubConfig, _validate_predtimechart_conf
 
 def test_hub_config_complex_forecast_hub():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir)
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     assert hub_config.hub_dir == hub_dir
     assert hub_config.rounds_idx == 0  # 'rounds'[0]
     assert hub_config.model_tasks_idx == 2  # 'rounds'[0]['model_tasks'][2]
@@ -48,7 +48,7 @@ def test_hub_config_complex_forecast_hub():
 
 def test_hub_config_complex_scenario_hub():
     hub_dir = Path('tests/hubs/example-complex-scenario-hub')
-    hub_config = HubConfig(hub_dir)
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
 
     assert hub_config.hub_dir == hub_dir
     assert hub_config.rounds_idx == 1  # 'rounds'[1]
@@ -128,7 +128,7 @@ def test_hub_config_complex_scenario_hub():
 
 def test_model_output_file_for_ref_date():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir)
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
 
     # case: exists
     file = hub_config.model_output_file_for_ref_date('Flusight-baseline', "2022-10-22")
@@ -148,13 +148,13 @@ def test_model_output_file_for_ref_date():
 def test_hub_dir_existence():
     with pytest.raises(RuntimeError, match="hub_dir not found"):
         hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-        HubConfig(hub_dir / 'bad-dir')
+        HubConfig(hub_dir / 'nonexistent-dir', None)
 
 
 def test_predtimechart_config_file_existence():
     with pytest.raises(RuntimeError, match="predtimechart config file not found"):
         hub_dir = Path('tests/hubs/no-ptc-config-hub')
-        HubConfig(hub_dir)
+        HubConfig(hub_dir, hub_dir / 'nonexistent-file.yml')
 
 
 def test_predtimechart_config_file_validity():
@@ -163,12 +163,14 @@ def test_predtimechart_config_file_validity():
     checked elsewhere
     """
     # test a known invalid hub
-    with pytest.raises(RuntimeError, match="invalid predtimechart-config.yml"):
-        HubConfig(Path('tests/hubs/invalid-ptc-config-hub'))
+    with pytest.raises(RuntimeError, match="invalid ptc_config_file"):
+        hub_dir = Path('tests/hubs/invalid-ptc-config-hub')
+        HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
 
     # test that HubConfig() calls `_validate_predtimechart_config()`, and then test against that function directly
     with patch('hub_predtimechart.hub_config._validate_predtimechart_config') as validate_mock:
-        HubConfig(Path('tests/hubs/example-complex-forecast-hub'))
+        hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+        HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
         validate_mock.assert_called_once()
 
     # get a valid config file to work with and then invalidate it in a few different ways to make sure schema.json is in
@@ -194,8 +196,8 @@ def test_hub_dir_ptc_compatibility():
     # constraints: see README.MD > Assumptions/limitations
     with pytest.raises(RuntimeError, match="hub is incompatible with predtimechart"):
         hub_dir = Path('tests/hubs/example-complex-scenario-hub')
-        HubConfig(hub_dir)
+        HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
 
     with pytest.raises(RuntimeError, match="hub is incompatible with predtimechart"):
         hub_dir = Path('tests/hubs/no-ptc-config-hub')
-        HubConfig(hub_dir)
+        HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
