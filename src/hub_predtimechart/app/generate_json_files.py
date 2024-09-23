@@ -18,23 +18,27 @@ logger = structlog.get_logger()
 
 @click.command()
 @click.argument('hub_dir', type=click.Path(file_okay=False, exists=True))
-@click.argument('output_dir', type=click.Path(file_okay=False, exists=True))
-@click.argument('options_file', type=click.Path(file_okay=True, exists=False))
-def main(hub_dir, output_dir, options_file):
+@click.argument('ptc_config_file', type=click.Path(file_okay=True, exists=False))
+@click.argument('options_file_out', type=click.Path(file_okay=True, exists=False))
+@click.argument('forecasts_out_dir', type=click.Path(file_okay=False, exists=True))
+def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir):
     """
-    An app that generates predtimechart forecast json files from `hub_dir`, outputting to `output_dir`, and generates a
-    predtimechart options json file that's saved to `options_file`.
+    An app that generates the options json file and forecast json files required by
+    https://github.com/reichlab/predtimechart to visualize a hub's forecasts.
 
-    :param hub_dir: a Path of a hub to generate forecast json files from
-    :param output_dir: a Path to output forecast json files to
-    :param options_file: a Path to output the predtimechart config file to
+    :param hub_dir: (input) a directory Path of a https://hubverse.io hub to generate forecast json files from
+    :param ptc_config_file: (input) a file Path to a `predtimechart-config.yaml` file that specifies how to process
+        `hub_dir` to get predtimechart output
+    :param options_file_out: (output) a file Path to output the predtimechart options object file to (see
+        https://github.com/reichlab/predtimechart?tab=readme-ov-file#options-object )
+    :param forecasts_out_dir: (output) a directory Path to output the viz forecast json files to
     """
-    logger.info(f"main({hub_dir=}, {output_dir=}): entered")
-    hub_config = HubConfig(Path(hub_dir))
-    json_files = _generate_json_files(hub_config, Path(output_dir))
-    _generate_options_file(hub_config, Path(options_file))
+    logger.info(f"main({hub_dir=}, {ptc_config_file=}, {options_file_out=}, {forecasts_out_dir=}): entered")
+    hub_config = HubConfig(Path(hub_dir), Path(ptc_config_file))
+    json_files = _generate_json_files(hub_config, Path(forecasts_out_dir))
+    _generate_options_file(hub_config, Path(options_file_out))
     logger.info(f"main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. "
-                f"config file generated: {options_file}")
+                f"config file generated: {options_file_out}")
 
 
 #
