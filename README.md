@@ -28,16 +28,15 @@ Initially the visualization will have these limitations:
 
 - Only one round block in `tasks.json > rounds` can be plotted.
 - Only one `model_tasks` group within that round block can be plotted, and only `model_tasks` groups with `quantile` [output_types](https://hubverse.io/en/latest/user-guide/model-output.html#formats-of-model-output) will be considered.
+- The following quantile levels (`output_type_id`s) are present in the data: 0.025, 0.25, 0.5, 0.75, 0.975
 - The hub has `reference_date`|`origin_date` and `target_date`|`target_end_date` task IDs in `tasks.json > rounds > model_tasks > task_ids`.
-- Only forecast data will be plotted, not target data.
 - Model metadata must contain a boolean `designated_model` field.
-- Only one `target_keys` key in `tasks.json > /rounds/_/model_tasks/_/target_metadata/_/target_keys/` is supported, and only one entry within it.
+- In the specified `model_tasks` object within the specified `rounds` object, all objects in the `target_metadata` list must have the same single key in the `target_keys` object.
+- Only forecast data will be plotted, not target data.
 - We assume all hub files have been validated.
 - For the `task_ids` entry in predtimechart config option generation, we use `value` for both `value` and `text`, rather than asking the user to provide a mapping from `value` to `text`. A solution is to require that mapping in `predtimechart-config.yml`.
 - The `initial_as_of` and `current_date` config fields are the last of `hub_config.fetch_reference_dates`.
 - The `initial_task_ids` config field is the first `task_ids` `value`.
-- The following quantile levels (`output_type_id`s) are present in the data: 0.025, 0.25, 0.5, 0.75, 0.975
-- others: @todo
 
 # Required hub configuration
 
