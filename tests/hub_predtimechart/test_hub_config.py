@@ -1,4 +1,5 @@
 import copy
+import json
 from pathlib import Path
 from unittest.mock import patch
 
@@ -6,7 +7,7 @@ import pytest
 import yaml
 from jsonschema.exceptions import ValidationError
 
-from hub_predtimechart.hub_config import HubConfig, _validate_predtimechart_config
+from hub_predtimechart.hub_config import HubConfig, _validate_predtimechart_config, _validate_hub_ptc_compatibility
 
 
 def test_hub_config_complex_forecast_hub():
@@ -43,87 +44,6 @@ def test_hub_config_complex_forecast_hub():
         "2022-12-17", "2022-12-24", "2022-12-31", "2023-01-07", "2023-01-14", "2023-01-21", "2023-01-28", "2023-02-04",
         "2023-02-11", "2023-02-18", "2023-02-25", "2023-03-04", "2023-03-11", "2023-03-18", "2023-03-25", "2023-04-01",
         "2023-04-08", "2023-04-15", "2023-04-22", "2023-04-29", "2023-05-06", "2023-05-13", "2023-05-20", "2023-05-27"]
-    # todo xx others - see README.MD > Required hub configuration
-
-
-def test_hub_config_complex_scenario_hub():
-    hub_dir = Path('tests/hubs/example-complex-scenario-hub')
-    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
-
-    assert hub_config.hub_dir == hub_dir
-    assert hub_config.rounds_idx == 1  # 'rounds'[1]
-    assert hub_config.model_tasks_idx == 0  # 'rounds'[1]['model_tasks'][0]
-    assert hub_config.reference_date_col_name == 'origin_date'
-    assert hub_config.target_date_col_name == 'n/a'  # NB: this hub is invalid for predtimechart, so test placeholder
-    assert hub_config.horizon_col_name == 'horizon'
-    assert sorted(list(hub_config.model_id_to_metadata.keys())) == sorted(['HUBuni-simexamp', 'hubcomp-examp'])
-    assert hub_config.task_ids == sorted(['horizon', 'location', 'origin_date', 'scenario_id', 'target'])
-    assert hub_config.target_col_name == 'target'
-    assert hub_config.target_col_name == 'target'
-    assert hub_config.viz_task_ids == sorted(['location', 'scenario_id'])
-    assert hub_config.fetch_target_id == 'inc death'
-    assert hub_config.fetch_target_name == 'Incident deaths'
-    assert hub_config.fetch_task_ids == {
-        'location': ['US', '01', '02', '04', '05', '06', '08', '09', '10', '11', '12', '13', '15', '16', '17', '18',
-                     '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34',
-                     '35', '36', '37', '38', '39', '40', '41', '42', '44', '45', '46', '47', '48', '49', '50', '51',
-                     '53', '54', '55', '56'],
-        'scenario_id': ['A-2022-05-09', 'B-2022-05-09', 'C-2022-05-09', 'D-2022-05-09']}
-    assert hub_config.fetch_task_ids_tuples == [
-        ('US', 'A-2022-05-09'), ('US', 'B-2022-05-09'), ('US', 'C-2022-05-09'), ('US', 'D-2022-05-09'),
-        ('01', 'A-2022-05-09'), ('01', 'B-2022-05-09'), ('01', 'C-2022-05-09'), ('01', 'D-2022-05-09'),
-        ('02', 'A-2022-05-09'), ('02', 'B-2022-05-09'), ('02', 'C-2022-05-09'), ('02', 'D-2022-05-09'),
-        ('04', 'A-2022-05-09'), ('04', 'B-2022-05-09'), ('04', 'C-2022-05-09'), ('04', 'D-2022-05-09'),
-        ('05', 'A-2022-05-09'), ('05', 'B-2022-05-09'), ('05', 'C-2022-05-09'), ('05', 'D-2022-05-09'),
-        ('06', 'A-2022-05-09'), ('06', 'B-2022-05-09'), ('06', 'C-2022-05-09'), ('06', 'D-2022-05-09'),
-        ('08', 'A-2022-05-09'), ('08', 'B-2022-05-09'), ('08', 'C-2022-05-09'), ('08', 'D-2022-05-09'),
-        ('09', 'A-2022-05-09'), ('09', 'B-2022-05-09'), ('09', 'C-2022-05-09'), ('09', 'D-2022-05-09'),
-        ('10', 'A-2022-05-09'), ('10', 'B-2022-05-09'), ('10', 'C-2022-05-09'), ('10', 'D-2022-05-09'),
-        ('11', 'A-2022-05-09'), ('11', 'B-2022-05-09'), ('11', 'C-2022-05-09'), ('11', 'D-2022-05-09'),
-        ('12', 'A-2022-05-09'), ('12', 'B-2022-05-09'), ('12', 'C-2022-05-09'), ('12', 'D-2022-05-09'),
-        ('13', 'A-2022-05-09'), ('13', 'B-2022-05-09'), ('13', 'C-2022-05-09'), ('13', 'D-2022-05-09'),
-        ('15', 'A-2022-05-09'), ('15', 'B-2022-05-09'), ('15', 'C-2022-05-09'), ('15', 'D-2022-05-09'),
-        ('16', 'A-2022-05-09'), ('16', 'B-2022-05-09'), ('16', 'C-2022-05-09'), ('16', 'D-2022-05-09'),
-        ('17', 'A-2022-05-09'), ('17', 'B-2022-05-09'), ('17', 'C-2022-05-09'), ('17', 'D-2022-05-09'),
-        ('18', 'A-2022-05-09'), ('18', 'B-2022-05-09'), ('18', 'C-2022-05-09'), ('18', 'D-2022-05-09'),
-        ('19', 'A-2022-05-09'), ('19', 'B-2022-05-09'), ('19', 'C-2022-05-09'), ('19', 'D-2022-05-09'),
-        ('20', 'A-2022-05-09'), ('20', 'B-2022-05-09'), ('20', 'C-2022-05-09'), ('20', 'D-2022-05-09'),
-        ('21', 'A-2022-05-09'), ('21', 'B-2022-05-09'), ('21', 'C-2022-05-09'), ('21', 'D-2022-05-09'),
-        ('22', 'A-2022-05-09'), ('22', 'B-2022-05-09'), ('22', 'C-2022-05-09'), ('22', 'D-2022-05-09'),
-        ('23', 'A-2022-05-09'), ('23', 'B-2022-05-09'), ('23', 'C-2022-05-09'), ('23', 'D-2022-05-09'),
-        ('24', 'A-2022-05-09'), ('24', 'B-2022-05-09'), ('24', 'C-2022-05-09'), ('24', 'D-2022-05-09'),
-        ('25', 'A-2022-05-09'), ('25', 'B-2022-05-09'), ('25', 'C-2022-05-09'), ('25', 'D-2022-05-09'),
-        ('26', 'A-2022-05-09'), ('26', 'B-2022-05-09'), ('26', 'C-2022-05-09'), ('26', 'D-2022-05-09'),
-        ('27', 'A-2022-05-09'), ('27', 'B-2022-05-09'), ('27', 'C-2022-05-09'), ('27', 'D-2022-05-09'),
-        ('28', 'A-2022-05-09'), ('28', 'B-2022-05-09'), ('28', 'C-2022-05-09'), ('28', 'D-2022-05-09'),
-        ('29', 'A-2022-05-09'), ('29', 'B-2022-05-09'), ('29', 'C-2022-05-09'), ('29', 'D-2022-05-09'),
-        ('30', 'A-2022-05-09'), ('30', 'B-2022-05-09'), ('30', 'C-2022-05-09'), ('30', 'D-2022-05-09'),
-        ('31', 'A-2022-05-09'), ('31', 'B-2022-05-09'), ('31', 'C-2022-05-09'), ('31', 'D-2022-05-09'),
-        ('32', 'A-2022-05-09'), ('32', 'B-2022-05-09'), ('32', 'C-2022-05-09'), ('32', 'D-2022-05-09'),
-        ('33', 'A-2022-05-09'), ('33', 'B-2022-05-09'), ('33', 'C-2022-05-09'), ('33', 'D-2022-05-09'),
-        ('34', 'A-2022-05-09'), ('34', 'B-2022-05-09'), ('34', 'C-2022-05-09'), ('34', 'D-2022-05-09'),
-        ('35', 'A-2022-05-09'), ('35', 'B-2022-05-09'), ('35', 'C-2022-05-09'), ('35', 'D-2022-05-09'),
-        ('36', 'A-2022-05-09'), ('36', 'B-2022-05-09'), ('36', 'C-2022-05-09'), ('36', 'D-2022-05-09'),
-        ('37', 'A-2022-05-09'), ('37', 'B-2022-05-09'), ('37', 'C-2022-05-09'), ('37', 'D-2022-05-09'),
-        ('38', 'A-2022-05-09'), ('38', 'B-2022-05-09'), ('38', 'C-2022-05-09'), ('38', 'D-2022-05-09'),
-        ('39', 'A-2022-05-09'), ('39', 'B-2022-05-09'), ('39', 'C-2022-05-09'), ('39', 'D-2022-05-09'),
-        ('40', 'A-2022-05-09'), ('40', 'B-2022-05-09'), ('40', 'C-2022-05-09'), ('40', 'D-2022-05-09'),
-        ('41', 'A-2022-05-09'), ('41', 'B-2022-05-09'), ('41', 'C-2022-05-09'), ('41', 'D-2022-05-09'),
-        ('42', 'A-2022-05-09'), ('42', 'B-2022-05-09'), ('42', 'C-2022-05-09'), ('42', 'D-2022-05-09'),
-        ('44', 'A-2022-05-09'), ('44', 'B-2022-05-09'), ('44', 'C-2022-05-09'), ('44', 'D-2022-05-09'),
-        ('45', 'A-2022-05-09'), ('45', 'B-2022-05-09'), ('45', 'C-2022-05-09'), ('45', 'D-2022-05-09'),
-        ('46', 'A-2022-05-09'), ('46', 'B-2022-05-09'), ('46', 'C-2022-05-09'), ('46', 'D-2022-05-09'),
-        ('47', 'A-2022-05-09'), ('47', 'B-2022-05-09'), ('47', 'C-2022-05-09'), ('47', 'D-2022-05-09'),
-        ('48', 'A-2022-05-09'), ('48', 'B-2022-05-09'), ('48', 'C-2022-05-09'), ('48', 'D-2022-05-09'),
-        ('49', 'A-2022-05-09'), ('49', 'B-2022-05-09'), ('49', 'C-2022-05-09'), ('49', 'D-2022-05-09'),
-        ('50', 'A-2022-05-09'), ('50', 'B-2022-05-09'), ('50', 'C-2022-05-09'), ('50', 'D-2022-05-09'),
-        ('51', 'A-2022-05-09'), ('51', 'B-2022-05-09'), ('51', 'C-2022-05-09'), ('51', 'D-2022-05-09'),
-        ('53', 'A-2022-05-09'), ('53', 'B-2022-05-09'), ('53', 'C-2022-05-09'), ('53', 'D-2022-05-09'),
-        ('54', 'A-2022-05-09'), ('54', 'B-2022-05-09'), ('54', 'C-2022-05-09'), ('54', 'D-2022-05-09'),
-        ('55', 'A-2022-05-09'), ('55', 'B-2022-05-09'), ('55', 'C-2022-05-09'), ('55', 'D-2022-05-09'),
-        ('56', 'A-2022-05-09'), ('56', 'B-2022-05-09'), ('56', 'C-2022-05-09'), ('56', 'D-2022-05-09')
-    ]
-    assert hub_config.reference_dates == ['2022-06-05']
 
 
 def test_model_output_file_for_ref_date():
@@ -157,7 +77,7 @@ def test_predtimechart_config_file_existence():
         HubConfig(hub_dir, hub_dir / 'nonexistent-file.yml')
 
 
-def test_predtimechart_config_file_validity():
+def test__validate_predtimechart_config():
     """
     tests predtimechart-config.yml validitiy. NB: for valid cases: example-complex-forecast-hub is valid and is
     checked elsewhere
@@ -173,31 +93,95 @@ def test_predtimechart_config_file_validity():
         HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
         validate_mock.assert_called_once()
 
-    # get a valid config file to work with and then invalidate it in a few different ways to make sure schema.json is in
-    # play
+    # get a valid config file to work with and then invalidate it in a few different ways to make sure ptc_schema.py is
+    # in play
     with open('tests/hubs/example-complex-forecast-hub/hub-config/predtimechart-config.yml') as fp:
-        valid_ptc_config = yaml.safe_load(fp)
+        ecfh_ptc_config = yaml.safe_load(fp)
 
     # case: missing property
-    ptc_config_copy = copy.deepcopy(valid_ptc_config)
-    del ptc_config_copy['rounds_idx']
+    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+    del ecfh_ptc_config_copy['rounds_idx']
     with pytest.raises(ValidationError, match="'rounds_idx' is a required property"):
-        _validate_predtimechart_config(ptc_config_copy)
+        _validate_predtimechart_config(ecfh_ptc_config_copy, {})  # tasks not necessary
 
     # case: empty string property
-    ptc_config_copy = copy.deepcopy(valid_ptc_config)
-    ptc_config_copy['reference_date_col_name'] = ''
+    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+    ecfh_ptc_config_copy['reference_date_col_name'] = ''
     with pytest.raises(ValidationError, match="\'\' should be non-empty"):
-        _validate_predtimechart_config(ptc_config_copy)
+        _validate_predtimechart_config(ecfh_ptc_config_copy, {})  # tasks not necessary
+
+    # case: rounds_idx or model_tasks_idx is out of range
+    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+    with open(hub_dir / 'hub-config' / 'tasks.json') as fp:
+        ecfh_tasks = json.load(fp)
+    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+    ecfh_ptc_config_copy['rounds_idx'] = 1  # there is only one `rounds`, so this is invalid
+    with pytest.raises(ValidationError, match="invalid rounds_idx"):
+        _validate_predtimechart_config(ecfh_ptc_config_copy, ecfh_tasks)
+
+    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+    ecfh_ptc_config_copy['model_tasks_idx'] = 3  # there are only three `model_tasks` within round 0, so this is invalid
+    with pytest.raises(ValidationError, match="invalid model_tasks_idx"):
+        _validate_predtimechart_config(ecfh_ptc_config_copy, ecfh_tasks)
+
+    # case: column not found
+    for nonexistent_col_name in ['reference_date_col_name', 'target_date_col_name', 'horizon_col_name']:
+        ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+        ecfh_ptc_config_copy[nonexistent_col_name] = 'nonexistent_column'
+        with pytest.raises(ValidationError, match=f"some required columns are missing"):
+            _validate_predtimechart_config(ecfh_ptc_config_copy, ecfh_tasks)
 
 
-@pytest.mark.skip(reason="todo")
-def test_hub_dir_ptc_compatibility():
-    # constraints: see README.MD > Assumptions/limitations
-    with pytest.raises(RuntimeError, match="hub is incompatible with predtimechart"):
-        hub_dir = Path('tests/hubs/example-complex-scenario-hub')
+def test__validate_hub_ptc_compatibility():
+    """
+    Tests the constraints identified in README.MD > Assumptions/limitations .
+    """
+
+    # test that HubConfig() calls `_validate_hub_ptc_compatibility()`, and then test against that function directly
+    with patch('hub_predtimechart.hub_config._validate_hub_ptc_compatibility') as validate_mock:
+        hub_dir = Path('tests/hubs/example-complex-forecast-hub')
         HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+        validate_mock.assert_called_once()
 
-    with pytest.raises(RuntimeError, match="hub is incompatible with predtimechart"):
-        hub_dir = Path('tests/hubs/no-ptc-config-hub')
-        HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    # case: model_tasks_idx does not have a quantile output_type
+    with open('tests/hubs/example-complex-forecast-hub/hub-config/predtimechart-config.yml') as fp:
+        ecfh_ptc_config = yaml.safe_load(fp)
+    with open(Path('tests/hubs/example-complex-scenario-hub') / 'hub-config' / 'tasks.json') as fp:
+        ecsh_tasks = json.load(fp)
+
+    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+    ecfh_ptc_config_copy['rounds_idx'] = 2
+    ecfh_ptc_config_copy['model_tasks_idx'] = 0  # 2|0 only has "sample" "output_type"
+    with pytest.raises(ValidationError, match="no quantile output_type found"):
+        _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecsh_tasks, {})
+
+    # case: not all quantile levels present (0.025, 0.25, 0.5, 0.75, 0.975)
+    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+    ecfh_ptc_config_copy['rounds_idx'] = 1
+    ecfh_ptc_config_copy['model_tasks_idx'] = 0  # 1|0 xx
+
+    ecsh_tasks_copy = copy.deepcopy(ecsh_tasks)
+    ecsh_round = ecsh_tasks_copy['rounds'][ecfh_ptc_config_copy['rounds_idx']]
+    ecsh_model_task = ecsh_round['model_tasks'][ecfh_ptc_config_copy['model_tasks_idx']]
+    ecsh_model_task['output_type']['quantile']['output_type_id']['required'] = [0.025, 0.25, 0.75, 0.975]  # no 0.5
+    with pytest.raises(ValidationError, match="some quantile output_type_ids are missing"):
+        _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecsh_tasks_copy, {})
+
+    # case: model metadata must contain a boolean `designated_model` field
+    with open(Path('tests/hubs/example-complex-forecast-hub') / 'hub-config' / 'tasks.json') as fp:
+        ecfh_tasks = json.load(fp)
+    with pytest.raises(ValidationError, match="'designated_model' not found in model metadata schema"):
+        _validate_hub_ptc_compatibility(ecfh_ptc_config, ecfh_tasks, {'required': []})
+
+    # case: two or more `target_metadata` objects have different `target_keys` keys
+    ecfh_tasks_copy = copy.deepcopy(ecfh_tasks)
+    ecfh_round = ecfh_tasks_copy['rounds'][ecfh_ptc_config['rounds_idx']]
+    ecfh_model_task = ecfh_round['model_tasks'][ecfh_ptc_config['model_tasks_idx']]
+    first_target_metadata_obj = ecfh_model_task['target_metadata'][0]
+    first_target_metadata_obj_copy = copy.deepcopy(first_target_metadata_obj)
+    first_target_metadata_obj_copy['target_keys'] = {"target2": "wk inc flu hosp"}  # dup of orig, which has 'target'
+    ecfh_model_task['target_metadata'].append(first_target_metadata_obj_copy)
+    with open(Path('tests/hubs/example-complex-forecast-hub') / 'hub-config' / 'model-metadata-schema.json') as fp:
+        ecfh_model_metadata_schema = json.load(fp)
+    with pytest.raises(ValidationError, match="more than one unique `target_metadata` key found"):
+        _validate_hub_ptc_compatibility(ecfh_ptc_config, ecfh_tasks_copy, ecfh_model_metadata_schema)
