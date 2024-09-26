@@ -25,7 +25,7 @@ dev = [
 ]
 
 [project.entry-points."console_scripts"]
-hub_predtimechart = "hub_predtimechart.app:main"
+hub_predtimechart = "hub_predtimechart.app.generate_json_files:main"
 
 [build-system]
 # Minimum requirements for the build system to execute.
@@ -49,4 +49,4 @@ inline-quotes = "double"
 quote-style = "double"
 
 [tool.setuptools.dynamic]
-version = {attr = "hub_predtimechart.__version__"}
+version = { attr = "hub_predtimechart.__version__" }

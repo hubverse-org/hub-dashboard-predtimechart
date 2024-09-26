@@ -23,15 +23,26 @@ logger = structlog.get_logger()
 @click.argument('forecasts_out_dir', type=click.Path(file_okay=False, exists=True))
 def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir):
     """
-    An app that generates the options json file and forecast json files required by
-    https://github.com/reichlab/predtimechart to visualize a hub's forecasts.
+    Generates the options json file and forecast json files used by https://github.com/reichlab/predtimechart to
+    visualize a hub's forecasts.
 
+    HUB_DIR: (input) a directory Path of a https://hubverse.io hub to generate forecast json files from
+
+    PTC_CONFIG_FILE: (input) a file Path to a `predtimechart-config.yaml` file that specifies how to process `hub_dir`
+    to get predtimechart output
+
+    OPTIONS_FILE_OUT: (output) a file Path to output the predtimechart options object file to (see
+    https://github.com/reichlab/predtimechart?tab=readme-ov-file#options-object )
+
+    FORECASTS_OUT_DIR: (output) a directory Path to output the viz forecast json files to
+    \f
     :param hub_dir: (input) a directory Path of a https://hubverse.io hub to generate forecast json files from
     :param ptc_config_file: (input) a file Path to a `predtimechart-config.yaml` file that specifies how to process
         `hub_dir` to get predtimechart output
     :param options_file_out: (output) a file Path to output the predtimechart options object file to (see
         https://github.com/reichlab/predtimechart?tab=readme-ov-file#options-object )
     :param forecasts_out_dir: (output) a directory Path to output the viz forecast json files to
+
     """
     logger.info(f"main({hub_dir=}, {ptc_config_file=}, {options_file_out=}, {forecasts_out_dir=}): entered")
     hub_config = HubConfig(Path(hub_dir), Path(ptc_config_file))
