@@ -37,7 +37,7 @@ The major parts of this project are:
     - generation details (reference_date -> as_of/selected date, horizon, target_date: x axis, task id vars -> dropdowns, ...): @todo
 4. **Server/Dashboard**: We will write a simple dashboard page providing a link to the forecast visualization (predtimechart) page. Our initial thought is to implement this via a straighforward [S3 static website](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html) (i.e., a self-contained `index.html` file, perhaps with some JavaScript to access basic [hubverse admin](https://hubverse.io/en/latest/quickstart-hub-admin/intro.html) information to orient the viewer such as hub name, tasks summary, etc.) Two comparable sites are https://respicast.ecdc.europa.eu/ (especially) and https://covid19forecasthub.org/ . See [Dashboard architecture] below for details.
 
-## Assumptions/limitations
+# Assumptions/limitations
 
 Initially the visualization will have these limitations:
 
