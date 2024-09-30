@@ -1,6 +1,6 @@
-## hub-dashboard-predtimechart
+# hub-dashboard-predtimechart
 
-## Goal
+# Goal
 
 Create an initial dashboard that provides a [predtimechart](https://github.com/reichlab/predtimechart)-based forecast visualization component for the hub. The thinking is that this will allow us to get something practical into the hands of hubverse users relatively quickly.
 
@@ -9,7 +9,7 @@ Considerations:
 - Client side only, i.e., nothing server-side. This will greatly simplify new hub onboarding.
 - Others: @todo
 
-## Python application
+# Python application
 
 A python application to create predtimechart JSON files is available from this
 repository and can be installed in a fresh python environment via pip:
@@ -24,7 +24,7 @@ The application can then be run from the command line:
 hub_predtimechart --help
 ```
 
-## Implementation summary
+# Implementation summary
 
 The major parts of this project are:
 
@@ -37,7 +37,7 @@ The major parts of this project are:
     - generation details (reference_date -> as_of/selected date, horizon, target_date: x axis, task id vars -> dropdowns, ...): @todo
 4. **Server/Dashboard**: We will write a simple dashboard page providing a link to the forecast visualization (predtimechart) page. Our initial thought is to implement this via a straighforward [S3 static website](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html) (i.e., a self-contained `index.html` file, perhaps with some JavaScript to access basic [hubverse admin](https://hubverse.io/en/latest/quickstart-hub-admin/intro.html) information to orient the viewer such as hub name, tasks summary, etc.) Two comparable sites are https://respicast.ecdc.europa.eu/ (especially) and https://covid19forecasthub.org/ . See [Dashboard architecture] below for details.
 
-### Assumptions/limitations
+## Assumptions/limitations
 
 Initially the visualization will have these limitations:
 
@@ -53,7 +53,7 @@ Initially the visualization will have these limitations:
 - The `initial_as_of` and `current_date` config fields are the last of `hub_config.fetch_reference_dates`.
 - The `initial_task_ids` config field is the first `task_ids` `value`.
 
-## Required hub configuration
+# Required hub configuration
 
 Some visualization-related information must be configured for each hub, including:
 
@@ -66,7 +66,7 @@ Some visualization-related information must be configured for each hub, includin
 - `initial_checked_models` (a predtimechart option)
 - others: @todo
 
-## Dashboard architecture
+# Dashboard architecture
 
 Our initial thinking is an approach where we provide a fixed layout (e.g., a menubar at top and a content area in the middle, such as found at https://respicast.ecdc.europa.eu/ ) that allows limited customization [specified by convention](https://en.wikipedia.org/wiki/Convention_over_configuration) via markdown files (some with specific names) placed in directories with specific names. Details:
 
@@ -79,11 +79,11 @@ Our initial thinking is an approach where we provide a fixed layout (e.g., a men
     - "Evaluations": @todo
     - "Background", "Community", "Get in touch": @todo loaded from specific files under `hub-website` such as `background.md`, etc.
 
-## Testing
+# Testing
 
 We plan to primarily use https://github.com/hubverse-org/example-complex-forecast-hub for development unit tests.
 
-## Questions/issues
+# Questions/issues
 
 - How/when will file generation be triggered? This applies to both `.json` visualization files and the predtimechart configuration object. For example, and admin UI, GitHub Action on schedule, round close, etc.
 - Is this a good time to remove predtimechart's user ensemble, if desired?
@@ -97,11 +97,11 @@ We plan to primarily use https://github.com/hubverse-org/example-complex-forecas
 - Should we filter out `hub_config.horizon_col_name == 0` ?
 - Should `forecast_data_for_model_df()`'s `quantile_levels` be stored in a config file somewhere?
 
-## Python local dev setup
+# Python local dev setup
 
 Use the following to create a local dev setup using pyenv and pipenv, which we assume are already installed.
 
-### Set up the virtual environment
+## Set up the virtual environment
 
 ```bash
 $ cd <this repo>
@@ -109,21 +109,21 @@ $ pyenv versions  # you should see this repo's .python-version set
 $ pipenv --python $(pyenv which python)
 ```
 
-### Generate requirements-dev.txt (for pipenv, etc.)
+## Generate requirements-dev.txt (for pipenv, etc.)
 
 ```bash
 $ pipenv install pip-tools  # for `pip-compile`
 $ pipenv run pip-compile --extra=dev --output-file=requirements/requirements.txt pyproject.toml
 ```
 
-### Install required packages
+## Install required packages
 
 ```bash
 $ cd <this repo>
 $ pipenv install -r requirements/requirements.txt -e .
 ```
 
-### Run the tests and application
+## Run the tests and application
 
 ```bash
 $ cd <this repo>
