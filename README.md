@@ -9,6 +9,21 @@ Considerations:
 - Client side only, i.e., nothing server-side. This will greatly simplify new hub onboarding.
 - Others: @todo
 
+# Python application
+
+A python application to create predtimechart JSON files is available from this
+repository and can be installed in a fresh python environment via pip:
+
+```sh
+pip install git+https://github.com/hubverse-org/hub-dashboard-predtimechart
+```
+
+The application can then be run from the command line:
+
+```sh
+hub_predtimechart --help
+```
+
 # Implementation summary
 
 The major parts of this project are:
