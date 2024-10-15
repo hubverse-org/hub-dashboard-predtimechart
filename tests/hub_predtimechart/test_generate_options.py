@@ -18,3 +18,12 @@ def test_generate_options_complex_forecast_hub():
         assert act_options[exp_field] == exp_options[exp_field]
 
     assert act_options == exp_options
+
+
+def test_generate_options_flusight_forecast_hub():
+    hub_dir = Path('tests/hubs/FluSight-forecast-hub')
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    with open('tests/expected/FluSight-forecast-hub/predtimechart-options.json') as fp:
+        exp_options = json.load(fp)
+    act_options = ptc_options_for_hub(hub_config)
+    assert act_options == exp_options

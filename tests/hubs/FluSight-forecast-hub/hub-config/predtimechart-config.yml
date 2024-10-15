@@ -1,0 +1,8 @@
+---
+rounds_idx: 0
+model_tasks_idx: 1
+reference_date_col_name: 'reference_date'
+target_date_col_name: 'target_end_date'
+horizon_col_name: 'horizon'
+initial_checked_models: ['UMass-flusion', 'UMass-trends_ensemble']
+disclaimer: Most forecasts have failed to reliably predict rapid changes in the trends of reported cases and hospitalizations. Due to this limitation, they should not be relied upon for decisions about the possibility or timing of rapid changes in trends.
