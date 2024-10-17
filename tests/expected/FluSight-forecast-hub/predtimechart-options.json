@@ -1,0 +1,81 @@
+{"target_variables": [
+  {
+    "value": "wk inc flu hosp",
+    "text": "incident influenza hospitalizations",
+    "plot_text": "incident influenza hospitalizations"
+  }
+],
+  "initial_target_var": "wk inc flu hosp",
+  "task_ids": {
+    "location": [
+      {"value": "US", "text": "US"},
+      {"value": "01", "text": "01"},
+      {"value": "02", "text": "02"},
+      {"value": "04", "text": "04"},
+      {"value": "05", "text": "05"},
+      {"value": "06", "text": "06"},
+      {"value": "08", "text": "08"},
+      {"value": "09", "text": "09"},
+      {"value": "10", "text": "10"},
+      {"value": "11", "text": "11"},
+      {"value": "12", "text": "12"},
+      {"value": "13", "text": "13"},
+      {"value": "15", "text": "15"},
+      {"value": "16", "text": "16"},
+      {"value": "17", "text": "17"},
+      {"value": "18", "text": "18"},
+      {"value": "19", "text": "19"},
+      {"value": "20", "text": "20"},
+      {"value": "21", "text": "21"},
+      {"value": "22", "text": "22"},
+      {"value": "23", "text": "23"},
+      {"value": "24", "text": "24"},
+      {"value": "25", "text": "25"},
+      {"value": "26", "text": "26"},
+      {"value": "27", "text": "27"},
+      {"value": "28", "text": "28"},
+      {"value": "29", "text": "29"},
+      {"value": "30", "text": "30"},
+      {"value": "31", "text": "31"},
+      {"value": "32", "text": "32"},
+      {"value": "33", "text": "33"},
+      {"value": "34", "text": "34"},
+      {"value": "35", "text": "35"},
+      {"value": "36", "text": "36"},
+      {"value": "37", "text": "37"},
+      {"value": "38", "text": "38"},
+      {"value": "39", "text": "39"},
+      {"value": "40", "text": "40"},
+      {"value": "41", "text": "41"},
+      {"value": "42", "text": "42"},
+      {"value": "44", "text": "44"},
+      {"value": "45", "text": "45"},
+      {"value": "46", "text": "46"},
+      {"value": "47", "text": "47"},
+      {"value": "48", "text": "48"},
+      {"value": "49", "text": "49"},
+      {"value": "50", "text": "50"},
+      {"value": "51", "text": "51"},
+      {"value": "53", "text": "53"},
+      {"value": "54", "text": "54"},
+      {"value": "55", "text": "55"},
+      {"value": "56", "text": "56"},
+      {"value": "72", "text": "72"}
+    ]
+  },
+  "initial_task_ids": {"location": "US"},
+  "intervals": ["0%", "50%", "95%"],
+  "initial_interval": "95%",
+  "available_as_ofs": {
+    "wk inc flu hosp": [
+      "2023-10-07", "2023-10-14", "2023-10-21", "2023-10-28", "2023-11-04", "2023-11-11", "2023-11-18", "2023-11-25", "2023-12-02", "2023-12-09", "2023-12-16", "2023-12-23", "2023-12-30", "2024-01-06", "2024-01-13", "2024-01-20", "2024-01-27", "2024-02-03", "2024-02-10", "2024-02-17", "2024-02-24", "2024-03-02", "2024-03-09", "2024-03-16", "2024-03-23", "2024-03-30", "2024-04-06", "2024-04-13", "2024-04-20", "2024-04-27", "2024-05-04", "2024-05-11", "2024-11-16", "2024-11-23", "2024-11-30", "2024-12-07", "2024-12-14", "2024-12-21", "2024-12-28", "2025-01-04", "2025-01-11", "2025-01-18", "2025-01-25", "2025-02-01", "2025-02-08", "2025-02-15", "2025-02-22", "2025-03-01", "2025-03-08", "2025-03-15", "2025-03-22", "2025-03-29", "2025-04-05", "2025-04-12", "2025-04-19", "2025-04-26", "2025-05-03", "2025-05-10", "2025-05-17", "2025-05-24", "2025-05-31"]
+  },
+  "initial_as_of": "2025-05-31",
+  "current_date": "2025-05-31",
+  "models": [
+    "CADPH-FluCAT_Ensemble", "CEPH-Rtrend_fluH", "CMU-TimeSeries", "CU-ensemble", "GT-FluFNP", "ISU_NiemiLab-NLH", "JHU_CSSE-CSSE_Ensemble", "LUcompUncertLab-chimera", "LosAlamos_NAU-CModel_Flu", "MIGHTE-Nsemble", "MOBS-GLEAM_FLUH", "NIH-Flu_ARIMA", "NU_UCSD-GLEAM_AI_FLUH", "PSI-PROF", "SGroup-RandomForest", "SigSci-CREG", "SigSci-TSENS", "Stevens-GBR", "UGA_flucast-Copycat", "UGA_flucast-INFLAenza", "UGuelph-CompositeCurve", "UGuelphensemble-GRYPHON", "UM-DeepOutbreak", "UMass-flusion", "UMass-trends_ensemble", "UNC_IDD-InfluPaint", "UVAFluX-Ensemble", "VTSanghani-Ensemble", "cfa-flumech", "cfarenewal-cfaepimlight", "fjordhest-ensemble"
+  ],
+  "initial_checked_models": ["UMass-flusion", "UMass-trends_ensemble"],
+  "disclaimer": "Most forecasts have failed to reliably predict rapid changes in the trends of reported cases and hospitalizations. Due to this limitation, they should not be relied upon for decisions about the possibility or timing of rapid changes in trends.",
+  "initial_xaxis_range": null
+}
