@@ -14,6 +14,8 @@ click==8.1.7
     # via
     #   hub-dashboard-predtimechart (pyproject.toml)
     #   pip-tools
+freezegun==1.5.1
+    # via hub-dashboard-predtimechart (pyproject.toml)
 iniconfig==2.0.0
     # via pytest
 jsonschema==4.23.0
@@ -45,7 +47,9 @@ pyproject-hooks==1.1.0
 pytest==8.3.2
     # via hub-dashboard-predtimechart (pyproject.toml)
 python-dateutil==2.9.0.post0
-    # via pandas
+    # via
+    #   freezegun
+    #   pandas
 pytz==2024.1
     # via pandas
 pyyaml==6.0.2
