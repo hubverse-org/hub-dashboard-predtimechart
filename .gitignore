@@ -75,7 +75,8 @@ docs/_build/
 
 # PyBuilder
 .pybuilder/
-target/
+# Commented out following line; we have test files in a folder named target
+# target/  
 
 # Jupyter Notebook
 .ipynb_checkpoints
