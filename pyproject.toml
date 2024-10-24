@@ -30,7 +30,7 @@ dev = [
 [project.entry-points."console_scripts"]
 hub_predtimechart = "hub_predtimechart.app.generate_json_files:main"
 ptc_generate_json_files = "hub_predtimechart.app.generate_json_files:main"
-ptc_generate_FluSight_targets = "hub_predtimechart.app.generate_target_json_files_FluSight:main"
+ptc_generate_flusight_targets = "hub_predtimechart.app.generate_target_json_files_FluSight:main"
 
 
 [build-system]
