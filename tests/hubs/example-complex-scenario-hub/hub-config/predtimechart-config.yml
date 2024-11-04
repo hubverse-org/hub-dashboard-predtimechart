@@ -5,4 +5,3 @@ reference_date_col_name: 'origin_date'
 target_date_col_name: 'origin_date'  # NB: this hub is invalid for predtimechart, which requires this column but is not present here. we use a placeholder so that the config file is valid
 horizon_col_name: 'horizon'
 initial_checked_models: ['Flusight-baseline']
-disclaimer: Most forecasts have failed to reliably predict rapid changes in the trends of reported cases and hospitalizations. Due to this limitation, they should not be relied upon for decisions about the possibility or timing of rapid changes in trends.

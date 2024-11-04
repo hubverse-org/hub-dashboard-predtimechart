@@ -38,11 +38,6 @@ ptc_config_schema = {
             "items": {
                 "type": "string"
             }
-        },
-        "disclaimer": {
-            "description": "text providing any important information users should know",
-            "type": "string",
-            "minLength": 1
         }
     },
     "required": [
@@ -51,7 +46,6 @@ ptc_config_schema = {
         "reference_date_col_name",
         "target_date_col_name",
         "horizon_col_name",
-        "initial_checked_models",
-        "disclaimer"
+        "initial_checked_models"
     ]
 }

@@ -1,6 +1,5 @@
 from datetime import date, datetime, timedelta
 import json
-import re
 from pathlib import Path
 
 import click
@@ -56,11 +55,13 @@ def main(hub_dir, target_out_dir):
     logger.info(f'main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. ')
     
 
-
 #
 # _generate_json_files() and helpers
 #
-def reference_date_from_today(now: datetime = date.today()) -> datetime:
+def reference_date_from_today(now: date = None) -> date:
+    if now is None:  # per https://stackoverflow.com/questions/52511405/freeze-time-not-working-for-default-param
+        now = date.today()
+
     # Calculate the days until the next Saturday
     days_to_saturday = 5 - now.weekday()
     if days_to_saturday < 0:

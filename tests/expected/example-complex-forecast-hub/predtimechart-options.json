@@ -74,6 +74,5 @@
   "current_date": "2023-05-27",
   "models": ["Flusight-baseline", "MOBS-GLEAM_FLUH", "PSI-DICE"],
   "initial_checked_models": ["Flusight-baseline"],
-  "disclaimer": "Most forecasts have failed to reliably predict rapid changes in the trends of reported cases and hospitalizations. Due to this limitation, they should not be relied upon for decisions about the possibility or timing of rapid changes in trends.",
   "initial_xaxis_range": null
 }
