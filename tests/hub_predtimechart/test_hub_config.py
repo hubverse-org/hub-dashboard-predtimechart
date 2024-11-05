@@ -45,6 +45,11 @@ def test_hub_config_complex_forecast_hub():
         "2023-02-11", "2023-02-18", "2023-02-25", "2023-03-04", "2023-03-11", "2023-03-18", "2023-03-25", "2023-04-01",
         "2023-04-08", "2023-04-15", "2023-04-22", "2023-04-29", "2023-05-06", "2023-05-13", "2023-05-20", "2023-05-27"]
 
+def test_hub_config_complex_forecast_hub_no_disclaimer():
+    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+    hub_config = HubConfig(hub_dir, Path('tests/configs/example-complex-no-disclaimer.yml'))
+    assert hub_config.disclaimer == None
+
 
 def test_model_output_file_for_ref_date():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')

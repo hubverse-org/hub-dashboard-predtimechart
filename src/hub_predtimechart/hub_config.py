@@ -58,7 +58,7 @@ class HubConfig:
         self.target_date_col_name = ptc_config['target_date_col_name']
         self.horizon_col_name = ptc_config['horizon_col_name']
         self.initial_checked_models = ptc_config['initial_checked_models']
-        self.disclaimer = ptc_config['disclaimer']
+        self.disclaimer = ptc_config.get('disclaimer')
 
         # set model_ids
         self.model_id_to_metadata = {}

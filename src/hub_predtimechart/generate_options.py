@@ -39,8 +39,9 @@ def ptc_options_for_hub(hub_config: HubConfig):
     options['models'].sort()
     options['initial_checked_models'] = hub_config.initial_checked_models
 
-    # set `disclaimer`
-    options['disclaimer'] = hub_config.disclaimer
+    # add `disclaimer` if present
+    if hub_config.disclaimer is not None:
+        options['disclaimer'] = hub_config.disclaimer
 
     # set `initial_xaxis_range`
     options['initial_xaxis_range'] = None
