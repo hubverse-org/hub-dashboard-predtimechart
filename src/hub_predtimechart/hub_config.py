@@ -60,6 +60,10 @@ class HubConfig:
         self.initial_checked_models = ptc_config['initial_checked_models']
         self.disclaimer = ptc_config.get('disclaimer')
 
+        # set task_id_text. keys: task_ids, values: value-to-text dict. ex:
+        # {'location': {'US': 'United States', '01': 'Alabama', ..., '78': 'Virgin Islands'},  ...}
+        self.task_id_text = ptc_config.get('task_id_text')
+
         # set model_ids
         self.model_id_to_metadata = {}
         for model_metadata_file in (list((self.hub_dir / 'model-metadata').glob('*.yml')) +

@@ -43,6 +43,11 @@ ptc_config_schema = {
             "description": "text providing any important information users should know",
             "type": "string",
             "minLength": 1
+        },
+        "task_id_text": {
+            "description": "optional mapping of predtimechart task id values to text. keys are task_ids and values are an object whose keys are ptc task_id `value`s and values are ptc task_id `text`s",
+            "type": "object",
+            # todo additional validation: keys are str and values are dict[str:str]
         }
     },
     "required": [

@@ -7,9 +7,20 @@ def ptc_options_for_hub(hub_config: HubConfig):
 
     :param hub_config: a HubConfig
     """
-    options = {}
+
+
+    def task_text(task_id, task_value):
+        if not isinstance(hub_config.task_id_text, dict):
+            return task_value
+
+        try:
+            return hub_config.task_id_text[task_id][task_value]
+        except KeyError:
+            return task_value
+
 
     # set `target_variables` and `initial_target_var`. recall that we currently only support one target
+    options = {}
     options['target_variables'] = [{'value': hub_config.fetch_target_id,
                                     'text': hub_config.fetch_target_name,
                                     'plot_text': hub_config.fetch_target_name}]
@@ -17,8 +28,9 @@ def ptc_options_for_hub(hub_config: HubConfig):
 
     # set `task_ids` and `initial_task_ids`
     options['task_ids'] = {}
-    for task_id, task_values in hub_config.fetch_task_ids.items():
-        options['task_ids'][task_id] = [{'value': task_value, 'text': task_value} for task_value in task_values]
+    for task_id, task_values in hub_config.fetch_task_ids.items():  # ex: {'location': ["US", "01", ...], ...}
+        options['task_ids'][task_id] = [{'value': task_value, 'text': task_text(task_id, task_value)} for task_value in
+                                        task_values]
     options['initial_task_ids'] = {task_id: task_values[0]['value'] for task_id, task_values in
                                    options['task_ids'].items()}
 

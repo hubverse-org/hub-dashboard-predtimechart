@@ -1,14 +1,13 @@
-from datetime import date, datetime, timedelta
 import json
-import re
+from datetime import date, timedelta
 from pathlib import Path
 
 import click
 import polars as pl
 import structlog
 
-from hub_predtimechart.generate_target_data import target_data_for_FluSight
 from hub_predtimechart.app.generate_json_files import json_file_name
+from hub_predtimechart.generate_target_data import target_data_for_FluSight
 from hub_predtimechart.util.logs import setup_logging
 
 
@@ -33,14 +32,14 @@ def main(hub_dir, target_out_dir):
 
     '''
     logger.info(f'main({hub_dir=}, {target_out_dir=}): entered')
-    
+
     hub_dir = Path(hub_dir)
     target_out_dir = Path(target_out_dir)
-    
+
     # load the target data csv file from the hub repo
     # for now, file path for target data is hard coded
     target_data_df = pl.read_csv(hub_dir / 'target-data/target-hospital-admissions.csv')
-    
+
     # for each location,
     # - generate target data file contents
     # - save as json
@@ -54,7 +53,6 @@ def main(hub_dir, target_out_dir):
             json.dump(location_data_dict, fp, indent=4)
 
     logger.info(f'main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. ')
-    
 
 
 #
@@ -63,6 +61,7 @@ def main(hub_dir, target_out_dir):
 def reference_date_from_today(now: date = None) -> date:
     if now is None:  # per https://stackoverflow.com/questions/52511405/freeze-time-not-working-for-default-param
         now = date.today()
+
     # Calculate the days until the next Saturday
     days_to_saturday = 5 - now.weekday()
     if days_to_saturday < 0:
