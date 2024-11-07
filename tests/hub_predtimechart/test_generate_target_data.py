@@ -10,7 +10,7 @@ from hub_predtimechart.generate_target_data import target_data_for_FluSight
 from hub_predtimechart.app.generate_target_json_files_FluSight import reference_date_from_today
 
 
-def test_generate_target_data_for_FluSight():
+def test_generate_target_data_flusight_forecast_hub():
     hub_dir = Path('tests/hubs/FluSight-forecast-hub')
     target_data_df = pl.read_csv(hub_dir / "target-data/target-hospital-admissions.csv")
 

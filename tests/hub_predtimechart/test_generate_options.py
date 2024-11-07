@@ -36,3 +36,12 @@ def test_generate_options_flusight_forecast_hub():
         exp_options = json.load(fp)
     act_options = ptc_options_for_hub(hub_config)
     assert act_options == exp_options
+
+
+def test_generate_options_task_id_text_covid19_forecast_hub():
+    hub_dir = Path('tests/hubs/covid19-forecast-hub')
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    with open('tests/expected/covid19-forecast-hub/predtimechart-options.json') as fp:
+        exp_options = json.load(fp)
+    act_options = ptc_options_for_hub(hub_config)
+    assert act_options == exp_options
