@@ -17,7 +17,7 @@ def target_data_for_FluSight(target_data_df: pl.DataFrame, task_ids_tuple: tuple
     }
     """
     loc = task_ids_tuple[0]
-    target_data_loc = target_data_df.filter(pl.col("location") == loc)
+    target_data_loc = target_data_df.filter(pl.col("location") == loc).sort("date")
     target_data_ptc = {
         "date": target_data_loc["date"].to_list(),
         "y": target_data_loc["value"].to_list()

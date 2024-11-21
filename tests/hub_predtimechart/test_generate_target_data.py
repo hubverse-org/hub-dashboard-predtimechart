@@ -3,7 +3,6 @@ from datetime import date
 from pathlib import Path
 
 import polars as pl
-from polars.testing import assert_frame_equal
 from freezegun import freeze_time
 
 from hub_predtimechart.app.generate_target_json_files_FluSight import reference_date_from_today, get_target_data_df
