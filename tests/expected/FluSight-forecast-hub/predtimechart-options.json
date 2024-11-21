@@ -72,9 +72,9 @@
   "initial_as_of": "2023-10-07",
   "current_date": "2023-10-07",
   "models": [
-    "CADPH-FluCAT_Ensemble", "CEPH-Rtrend_fluH", "CMU-TimeSeries", "CU-ensemble", "GT-FluFNP", "ISU_NiemiLab-NLH", "JHU_CSSE-CSSE_Ensemble", "LUcompUncertLab-chimera", "LosAlamos_NAU-CModel_Flu", "MIGHTE-Nsemble", "MOBS-GLEAM_FLUH", "NIH-Flu_ARIMA", "NU_UCSD-GLEAM_AI_FLUH", "PSI-PROF", "SGroup-RandomForest", "SigSci-CREG", "SigSci-TSENS", "Stevens-GBR", "UGA_flucast-Copycat", "UGA_flucast-INFLAenza", "UGuelph-CompositeCurve", "UGuelphensemble-GRYPHON", "UM-DeepOutbreak", "UMass-flusion", "UMass-trends_ensemble", "UNC_IDD-InfluPaint", "UVAFluX-Ensemble", "VTSanghani-Ensemble", "cfa-flumech", "cfarenewal-cfaepimlight", "fjordhest-ensemble"
+    "CADPH-FluCAT_Ensemble", "CEPH-Rtrend_fluH", "CMU-TimeSeries", "CU-ensemble", "FluSight-baseline", "FluSight-ensemble", "GT-FluFNP", "ISU_NiemiLab-NLH", "JHU_CSSE-CSSE_Ensemble", "LUcompUncertLab-chimera", "LosAlamos_NAU-CModel_Flu", "MIGHTE-Nsemble", "MOBS-GLEAM_FLUH", "NIH-Flu_ARIMA", "NU_UCSD-GLEAM_AI_FLUH", "PSI-PROF", "SGroup-RandomForest", "SigSci-CREG", "SigSci-TSENS", "Stevens-GBR", "UGA_flucast-Copycat", "UGA_flucast-INFLAenza", "UGuelph-CompositeCurve", "UGuelphensemble-GRYPHON", "UM-DeepOutbreak", "UMass-flusion", "UMass-trends_ensemble", "UNC_IDD-InfluPaint", "UVAFluX-Ensemble", "VTSanghani-Ensemble", "cfa-flumech", "cfarenewal-cfaepimlight", "fjordhest-ensemble"
   ],
-  "initial_checked_models": ["UMass-flusion", "UMass-trends_ensemble"],
+  "initial_checked_models": ["FluSight-baseline", "FluSight-ensemble"],
   "disclaimer": "Most forecasts have failed to reliably predict rapid changes in the trends of reported cases and hospitalizations. Due to this limitation, they should not be relied upon for decisions about the possibility or timing of rapid changes in trends.",
   "initial_xaxis_range": null
 }
