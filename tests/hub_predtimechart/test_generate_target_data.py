@@ -2,12 +2,12 @@ import json
 from datetime import date
 from pathlib import Path
 
-from freezegun import freeze_time
 import polars as pl
+from polars.testing import assert_frame_equal
+from freezegun import freeze_time
 
-from hub_predtimechart.app.generate_json_files import json_file_name
+from hub_predtimechart.app.generate_target_json_files_FluSight import reference_date_from_today, get_target_data_df
 from hub_predtimechart.generate_target_data import target_data_for_FluSight
-from hub_predtimechart.app.generate_target_json_files_FluSight import reference_date_from_today
 
 
 def test_generate_target_data_flusight_forecast_hub():
@@ -39,3 +39,14 @@ def test_reference_date_from_today():
     # which is set to "2024-10-24" via the freeze_time decorator.
     act_reference_date = reference_date_from_today()
     assert act_reference_date == exp_reference_date
+
+
+def test_get_target_data_df():
+    hub_dir = Path('tests/hubs/FluSight-forecast-hub')
+    act_target_data_df = get_target_data_df(hub_dir, 'target-hospital-admissions-no-na.csv')
+    assert act_target_data_df["value"].dtype == pl.datatypes.Int64
+    assert act_target_data_df["value"].to_list() == [3, 16, 30, 106, 151, 23, 64, 8, 2, 266]
+
+    act_target_data_df = get_target_data_df(hub_dir, 'target-hospital-admissions-yes-na.csv')
+    assert act_target_data_df["value"].dtype == pl.datatypes.Int64
+    assert act_target_data_df["value"].to_list() == [3, 16, None, 106, 151, 23, 64, 8, 2, 266]

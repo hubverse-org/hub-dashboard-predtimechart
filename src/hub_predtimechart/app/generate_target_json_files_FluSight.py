@@ -35,10 +35,7 @@ def main(hub_dir, target_out_dir):
 
     hub_dir = Path(hub_dir)
     target_out_dir = Path(target_out_dir)
-
-    # load the target data csv file from the hub repo
-    # for now, file path for target data is hard coded
-    target_data_df = pl.read_csv(hub_dir / 'target-data/target-hospital-admissions.csv')
+    target_data_df = get_target_data_df(hub_dir, 'target-hospital-admissions.csv')
 
     # for each location,
     # - generate target data file contents
@@ -55,9 +52,11 @@ def main(hub_dir, target_out_dir):
     logger.info(f'main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. ')
 
 
-#
-# _generate_json_files() and helpers
-#
+def get_target_data_df(hub_dir, target_data_filename):
+    # load the target data csv file from the hub repo for now, file path for target data is hard coded
+    return pl.read_csv(hub_dir / 'target-data' / target_data_filename, null_values=["NA"])
+
+
 def reference_date_from_today(now: date = None) -> date:
     if now is None:  # per https://stackoverflow.com/questions/52511405/freeze-time-not-working-for-default-param
         now = date.today()
