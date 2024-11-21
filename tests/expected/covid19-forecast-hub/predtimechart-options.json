@@ -70,7 +70,7 @@
   "intervals": ["0%", "50%", "95%"],
   "initial_interval": "95%",
   "available_as_ofs": {
-    "wk inc covid hosp": []
+    "wk inc covid hosp": ["2024-11-09"]
   },
   "initial_as_of": "2024-11-09",
   "current_date": "2024-11-09",

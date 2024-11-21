@@ -67,7 +67,7 @@
   "intervals": ["0%", "50%", "95%"],
   "initial_interval": "95%",
   "available_as_ofs": {
-    "wk inc flu hosp": []
+    "wk inc flu hosp": ["2023-10-07"]
   },
   "initial_as_of": "2023-10-07",
   "current_date": "2023-10-07",

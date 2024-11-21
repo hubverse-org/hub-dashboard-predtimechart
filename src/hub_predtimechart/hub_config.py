@@ -127,6 +127,15 @@ class HubConfig:
         """
         Returns a list of reference_dates with at least one forecast file.
         """
+
+
+        def get_sorted_values_or_first_config_ref_date(reference_dates: set[str]):
+            if len(reference_dates) == 0:
+                return [min(self.reference_dates)]
+            else:
+                return sorted(list(reference_dates))
+
+
         # loop over every (reference_date X model_id) combination.
         as_ofs = {self.fetch_target_id: set()}
         for reference_date in self.reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
@@ -146,7 +155,8 @@ class HubConfig:
                     if not df.empty:
                         as_ofs[self.fetch_target_id].add(reference_date)
 
-        return {fetch_target_id: sorted(list(reference_dates)) for fetch_target_id, reference_dates in as_ofs.items()}
+        return {fetch_target_id: get_sorted_values_or_first_config_ref_date(reference_dates)
+                for fetch_target_id, reference_dates in as_ofs.items()}
 
 
 def _validate_hub_ptc_compatibility(ptc_config: dict, tasks: dict, model_metadata_schema: dict):
