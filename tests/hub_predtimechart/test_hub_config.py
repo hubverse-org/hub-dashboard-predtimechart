@@ -71,6 +71,14 @@ def test_model_output_file_for_ref_date():
     assert file is None
 
 
+def test_get_available_as_ofs():
+    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    act_as_ofs = hub_config.get_available_as_ofs()
+    exp_as_ofs = {'wk inc flu hosp': ['2022-10-22', '2022-11-19', '2022-12-17']}
+    assert act_as_ofs == exp_as_ofs
+
+
 def test_hub_dir_existence():
     with pytest.raises(RuntimeError, match="hub_dir not found"):
         hub_dir = Path('tests/hubs/example-complex-forecast-hub')

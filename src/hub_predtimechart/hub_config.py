@@ -4,6 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Optional
 
+import pandas as pd
 import yaml
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
@@ -120,6 +121,32 @@ class HubConfig:
                 return poss_output_file
 
         return None
+
+
+    def get_available_as_ofs(self) -> dict[str, list[str]]:
+        """
+        Returns a list of reference_dates with at least one forecast file.
+        """
+        # loop over every (reference_date X model_id) combination.
+        as_ofs = {self.fetch_target_id: set()}
+        for reference_date in self.reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
+            for model_id in self.model_id_to_metadata:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
+                model_output_file = self.model_output_file_for_ref_date(model_id, reference_date)
+                if model_output_file:
+                    # todo xx extract to function, call from here and _generate_json_files()
+                    if model_output_file.suffix == '.csv':
+                        df = pd.read_csv(model_output_file, usecols=[self.target_col_name])
+                    elif model_output_file.suffix in ['.parquet', '.pqt']:
+                        df = pd.read_parquet(model_output_file, columns=[self.target_col_name])
+                    else:
+                        raise RuntimeError(f"unsupported model output file type: {model_output_file!r}. "
+                                           f"Only .csv and .parquet are supported")
+
+                    df = df.loc[df[self.target_col_name] == self.fetch_target_id, :]
+                    if not df.empty:
+                        as_ofs[self.fetch_target_id].add(reference_date)
+
+        return {fetch_target_id: sorted(list(reference_dates)) for fetch_target_id, reference_dates in as_ofs.items()}
 
 
 def _validate_hub_ptc_compatibility(ptc_config: dict, tasks: dict, model_metadata_schema: dict):

@@ -19,6 +19,13 @@ def ptc_options_for_hub(hub_config: HubConfig):
             return task_value
 
 
+    def get_max_ref_date_or_first_config_ref_date(reference_dates):
+        if len(reference_dates) == 0:
+            return min(hub_config.reference_dates)
+        else:
+            return max(reference_dates)
+
+
     # set `target_variables` and `initial_target_var`. recall that we currently only support one target
     options = {}
     options['target_variables'] = [{'value': hub_config.fetch_target_id,
@@ -39,9 +46,12 @@ def ptc_options_for_hub(hub_config: HubConfig):
     options['initial_interval'] = options['intervals'][-1]
 
     # set `available_as_ofs`, `initial_as_of`, and `current_date`
-    options['available_as_ofs'] = {hub_config.fetch_target_id: hub_config.reference_dates}
-    options['initial_as_of'] = hub_config.reference_dates[-1]
-    options['current_date'] = hub_config.reference_dates[-1]
+    # available_as_ofs is the subset of hub_config.reference_dates for which
+    # there is at least one model output file
+    options['available_as_ofs'] = hub_config.get_available_as_ofs()
+    options['initial_as_of'] = max([get_max_ref_date_or_first_config_ref_date(reference_dates)
+                                    for reference_dates in options['available_as_ofs'].values()])
+    options['current_date'] = options['initial_as_of']
 
     # set `models` and `initial_checked_models`
     options['models'] = []
