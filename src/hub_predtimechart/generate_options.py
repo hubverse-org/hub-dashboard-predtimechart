@@ -56,8 +56,7 @@ def ptc_options_for_hub(hub_config: HubConfig):
     # set `models` and `initial_checked_models`
     options['models'] = []
     for model_id, metadata in hub_config.model_id_to_metadata.items():
-        if metadata['designated_model']:
-            options['models'].append(model_id)
+        options['models'].append(model_id)
     options['models'].sort()
     options['initial_checked_models'] = hub_config.initial_checked_models
 
