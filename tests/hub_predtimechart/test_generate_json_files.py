@@ -49,8 +49,10 @@ def test_generate_json_files_skip_files(tmp_path):
                                output_dir / 'wk-inc-flu-hosp_01_2022-11-19.json',
                                output_dir / 'wk-inc-flu-hosp_01_2022-12-17.json'}
 
+    # two JSON files should be generated because they are from the current round
     new_json_f = _generate_json_files(hub_config, output_dir)
-    assert set(new_json_f) == {output_dir / 'wk-inc-flu-hosp_US_2022-12-17.json'}
+    assert set(new_json_f) == {output_dir / 'wk-inc-flu-hosp_01_2022-12-17.json',
+                               output_dir / 'wk-inc-flu-hosp_US_2022-12-17.json'}
     for json_file in set(json_files) | set(new_json_f):
         with open('tests/expected/example-complex-forecast-hub/forecasts/' + json_file.name) as exp_fp, \
                 open(output_dir / json_file.name) as act_fp:
