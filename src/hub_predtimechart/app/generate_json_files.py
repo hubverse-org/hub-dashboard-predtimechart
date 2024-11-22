@@ -99,7 +99,7 @@ def generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, 
     """
     Gets the forecast data to save using the passed args and then saves it to the appropriately-named json file in
     `output_dir`. Returns the saved json file Path, or None if no json file was generated (i.e., there was no forecast
-    data for the args).
+    data for the args) OR if the json file already exists.
     """
     file_name = json_file_name(target, task_ids_tuple, reference_date)
     json_file_path = output_dir / file_name
