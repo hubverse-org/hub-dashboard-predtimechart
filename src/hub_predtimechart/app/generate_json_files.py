@@ -99,11 +99,13 @@ def generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, 
     """
     Gets the forecast data to save using the passed args and then saves it to the appropriately-named json file in
     `output_dir`. Returns the saved json file Path, or None if no json file was generated (i.e., there was no forecast
-    data for the args) OR if the json file already exists.
+    data for the args) OR if the json file already exists and is not the current round.
     """
     file_name = json_file_name(target, task_ids_tuple, reference_date)
     json_file_path = output_dir / file_name
-    if Path(json_file_path).exists():
+    available_as_ofs = hub_config.get_available_as_ofs().values()
+    current_date = max([max(date) for date in available_as_ofs])
+    if current_date != reference_date and Path(json_file_path).exists():
         return None
     forecast_data = {}
     for model_id, model_df in model_id_to_df.items():
