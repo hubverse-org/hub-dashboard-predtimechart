@@ -111,7 +111,7 @@ def generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, 
         file_name = json_file_name(target, task_ids_tuple, reference_date)
         json_file_path = output_dir / file_name
         with open(json_file_path, 'w') as fp:
-            json.dump(forecast_data, fp, indent=4)
+            json.dump(forecast_data, fp, indent=4, default=str)
             return json_file_path
 
     return None
