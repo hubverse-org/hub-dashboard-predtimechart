@@ -85,9 +85,11 @@ def _generate_json_files(hub_config: HubConfig, output_dir: Path) -> list[Path]:
             continue
 
         # iterate over each (target X task_ids) combination, outputting to the corresponding json file
+        available_as_ofs = hub_config.get_available_as_ofs().values()
+        current_date = max([max(date) for date in available_as_ofs])
         for task_ids_tuple in hub_config.fetch_task_ids_tuples:
             json_file = generate_forecast_json_file(hub_config, model_id_to_df, output_dir, hub_config.fetch_target_id,
-                                                    task_ids_tuple, reference_date)
+                                                    task_ids_tuple, reference_date, current_date)
             if json_file:
                 json_files.append(json_file)
 
@@ -95,7 +97,7 @@ def _generate_json_files(hub_config: HubConfig, output_dir: Path) -> list[Path]:
     return json_files
 
 
-def generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, task_ids_tuple, reference_date):
+def generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, task_ids_tuple, reference_date, current_date):
     """
     Gets the forecast data to save using the passed args and then saves it to the appropriately-named json file in
     `output_dir`. Returns the saved json file Path, or None if no json file was generated (i.e., there was no forecast
@@ -103,8 +105,6 @@ def generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, 
     """
     file_name = json_file_name(target, task_ids_tuple, reference_date)
     json_file_path = output_dir / file_name
-    available_as_ofs = hub_config.get_available_as_ofs().values()
-    current_date = max([max(date) for date in available_as_ofs])
     if current_date != reference_date and Path(json_file_path).exists():
         return None
     forecast_data = {}
