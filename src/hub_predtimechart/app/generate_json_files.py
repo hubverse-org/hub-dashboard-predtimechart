@@ -21,7 +21,8 @@ logger = structlog.get_logger()
 @click.argument('ptc_config_file', type=click.Path(file_okay=True, exists=False))
 @click.argument('options_file_out', type=click.Path(file_okay=True, exists=False))
 @click.argument('forecasts_out_dir', type=click.Path(file_okay=False, exists=True))
-def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir):
+@click.option('--regenerate', is_flag=True, default=False)
+def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir, regenerate):
     """
     Generates the options json file and forecast json files used by https://github.com/reichlab/predtimechart to
     visualize a hub's forecasts.
@@ -35,6 +36,9 @@ def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir):
     https://github.com/reichlab/predtimechart?tab=readme-ov-file#options-object )
 
     FORECASTS_OUT_DIR: (output) a directory Path to output the viz forecast json files to
+
+    --REGENERATE: (flag) indicator for a complete rebuild of the data regardless of
+        whether or not the files exist.
     \f
     :param hub_dir: (input) a directory Path of a https://hubverse.io hub to generate forecast json files from
     :param ptc_config_file: (input) a file Path to a `predtimechart-config.yaml` file that specifies how to process
@@ -42,11 +46,13 @@ def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir):
     :param options_file_out: (output) a file Path to output the predtimechart options object file to (see
         https://github.com/reichlab/predtimechart?tab=readme-ov-file#options-object )
     :param forecasts_out_dir: (output) a directory Path to output the viz forecast json files to
+    :param regenerate: (flag) indicator for a complete rebuild of the data regardless of
+        whether or not the files exist.
 
     """
-    logger.info(f"main({hub_dir=}, {ptc_config_file=}, {options_file_out=}, {forecasts_out_dir=}): entered")
+    logger.info(f"main({hub_dir=}, {ptc_config_file=}, {options_file_out=}, {forecasts_out_dir=}, {regenerate=}): entered")
     hub_config = HubConfig(Path(hub_dir), Path(ptc_config_file))
-    json_files = _generate_json_files(hub_config, Path(forecasts_out_dir))
+    json_files = _generate_json_files(hub_config, Path(forecasts_out_dir), regenerate)
     _generate_options_file(hub_config, Path(options_file_out))
     logger.info(f"main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. "
                 f"config file generated: {options_file_out}")
@@ -56,9 +62,14 @@ def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir):
 # _generate_json_files() and helpers
 #
 
-def _generate_json_files(hub_config: HubConfig, output_dir: Path) -> list[Path]:
+def _generate_json_files(hub_config: HubConfig, output_dir: Path, is_regenerate: bool=False) -> list[Path]:
     """
     Generates forecast json files from `hub_config`. Returns a list of Paths of the generated files.
+
+    :param hub_config: see callers above
+    :param output_dir: see callers above
+    :param is_regenerate: boolean indicator for a complete rebuild of the data regardless of
+        whether or not the files exist.
     """
     # loop over every (reference_date X model_id) combination. the nested order of reference_date, model_id ensures we
     # open each model_output file only once. the tradeoff is that all model_output files for a particular reference_date
@@ -85,9 +96,11 @@ def _generate_json_files(hub_config: HubConfig, output_dir: Path) -> list[Path]:
             continue
 
         # iterate over each (target X task_ids) combination, outputting to the corresponding json file
+        available_as_ofs = hub_config.get_available_as_ofs().values()
+        newest_reference_date = max([max(date) for date in available_as_ofs])
         for task_ids_tuple in hub_config.fetch_task_ids_tuples:
             json_file = generate_forecast_json_file(hub_config, model_id_to_df, output_dir, hub_config.fetch_target_id,
-                                                    task_ids_tuple, reference_date)
+                                                    task_ids_tuple, reference_date, newest_reference_date, is_regenerate)
             if json_file:
                 json_files.append(json_file)
 
@@ -95,12 +108,17 @@ def _generate_json_files(hub_config: HubConfig, output_dir: Path) -> list[Path]:
     return json_files
 
 
-def generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, task_ids_tuple, reference_date):
+def generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, task_ids_tuple, reference_date, newest_reference_date, is_regenerate):
     """
     Gets the forecast data to save using the passed args and then saves it to the appropriately-named json file in
     `output_dir`. Returns the saved json file Path, or None if no json file was generated (i.e., there was no forecast
-    data for the args).
+    data for the args) OR if the json file already exists and is not the current round.
     """
+    file_name = json_file_name(target, task_ids_tuple, reference_date)
+    json_file_path = output_dir / file_name
+    if not is_regenerate and (reference_date != newest_reference_date) and Path(json_file_path).exists():
+        return None
+
     forecast_data = {}
     for model_id, model_df in model_id_to_df.items():
         model_forecast_data = forecast_data_for_model_df(hub_config, model_df, target, task_ids_tuple)
@@ -108,8 +126,6 @@ def generate_forecast_json_file(hub_config, model_id_to_df, output_dir, target, 
             forecast_data[model_id] = model_forecast_data
 
     if forecast_data:
-        file_name = json_file_name(target, task_ids_tuple, reference_date)
-        json_file_path = output_dir / file_name
         with open(json_file_path, 'w') as fp:
             json.dump(forecast_data, fp, indent=4, default=str)
             return json_file_path
