@@ -61,6 +61,28 @@ def test_generate_json_files_skip_files(tmp_path):
             assert act_data == exp_data
 
 
+def test_generate_json_files_regenerate(tmp_path):
+    """
+    An integration test of `generate_json_files.py`'s `_generate_json_files()`.
+    This validates that only new data will be generated
+    """
+    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    output_dir = tmp_path
+
+    # copy all but one prediction to the output directory
+    shutil.copytree('tests/expected/example-complex-forecast-hub/forecasts/', output_dir, dirs_exist_ok=True)
+
+    # all JSON files should be generated because they are from the current round
+    json_files = _generate_json_files(hub_config, output_dir, True)
+    assert set(json_files) == {output_dir / 'wk-inc-flu-hosp_US_2022-10-22.json',
+                               output_dir / 'wk-inc-flu-hosp_01_2022-10-22.json',
+                               output_dir / 'wk-inc-flu-hosp_US_2022-11-19.json',
+                               output_dir / 'wk-inc-flu-hosp_01_2022-11-19.json',
+                               output_dir / 'wk-inc-flu-hosp_US_2022-12-17.json',
+                               output_dir / 'wk-inc-flu-hosp_01_2022-12-17.json'}
+
+
 def test_generate_options_file(tmp_path):
     """
     An integration test of `generate_json_files.py`'s `_generate_options_file()`.
