@@ -59,5 +59,8 @@ def test_get_target_data_df_error_cases():
     assert act_target_data_df["value"].to_list() == [3, 16, None, 106, 151, 23, 64, 8, 2, 266]
 
     # case: file not found
+    with pytest.raises(FileNotFoundError, match="target_data_filename was missing"):
+        get_target_data_df(hub_dir, None)
+
     with pytest.raises(FileNotFoundError, match="target data file not found"):
         get_target_data_df(hub_dir, 'non-existent-file.csv')
