@@ -1,4 +1,5 @@
 import json
+import sys
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -53,7 +54,7 @@ def main(hub_dir, ptc_config_file, target_out_dir):
         target_data_df = get_target_data_df(hub_dir, hub_config.target_data_file_name)
     except FileNotFoundError as error:
         logger.error(f"target data file not found. {hub_config.target_data_file_name=}, {error=}")
-        return
+        sys.exit(1)
 
     for loc in target_data_df['location'].unique():
         task_ids_tuple = (loc,)
