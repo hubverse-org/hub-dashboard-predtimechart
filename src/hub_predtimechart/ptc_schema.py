@@ -53,7 +53,12 @@ ptc_config_schema = {
                     "type": "string"
                 }
             }
-        }
+        },
+        "target_data_file_name": {
+            "description": "optional name of the target data file located in the hub's target-data dir",
+            "type": "string",
+            "minLength": 1
+        },
     },
     "required": [
         "rounds_idx",

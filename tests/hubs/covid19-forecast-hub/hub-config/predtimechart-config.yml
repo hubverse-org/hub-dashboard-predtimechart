@@ -65,3 +65,4 @@ task_id_text:
     "72": "Puerto Rico"
     "74": "U.S. Minor Outlying Islands"
     "78": "Virgin Islands"
+target_data_file_name: 'covid-hospital-admissions.csv'

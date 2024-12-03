@@ -52,6 +52,7 @@ Initially the visualization will have these limitations:
 - For the `task_ids` entry in predtimechart config option generation, we use `value` for both `value` and `text`, rather than asking the user to provide a mapping from `value` to `text`. A solution is to require that mapping in `predtimechart-config.yml`.
 - The `initial_as_of` and `current_date` config fields are the last of `hub_config.fetch_reference_dates`.
 - The `initial_task_ids` config field is the first `task_ids` `value`.
+- Target data generation: The app `generate_target_json_files.py` is limited to hubs that store their target data as a .csv file in the `target-data` subdirectory. That file is specified via the `target_data_file_name` field in the hub's `predtimechart-config.yml` file. We expect the file has these columns: `date`, `value`, and `location`.
 
 # Required hub configuration
 
@@ -93,7 +94,7 @@ We plan to primarily use https://github.com/hubverse-org/example-complex-forecas
 - Where is the source data coming from - GitHub vs. S3?
 - Which model output formats will we support? The hub docs mention CSV and parquet, but that others (e.g., zipped files) might be supported.
 - Regarding naming the .json files, should we be influenced by Arrow's partitioning scheme where it names intermediate directories according to filtering.
-- We might need separate apps to update config options vs. visualization data (json files) for the case where the user has changed predtimechart-config.yml independent of a round closing. 
+- We might need separate apps to update config options vs. visualization data (json files) for the case where the user has changed `predtimechart-config.yml` independent of a round closing. 
 - Should we filter out `hub_config.horizon_col_name == 0` ?
 - Should `forecast_data_for_model_df()`'s `quantile_levels` be stored in a config file somewhere?
 
