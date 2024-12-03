@@ -24,6 +24,7 @@ def test_hub_config_complex_forecast_hub():
     assert (sorted(list(hub_config.model_id_to_metadata.keys())) ==
             sorted(['Flusight-baseline', 'MOBS-GLEAM_FLUH', 'PSI-DICE']))
     assert hub_config.task_ids == sorted(['reference_date', 'target', 'horizon', 'location', 'target_end_date'])
+    assert hub_config.target_data_file_name == 'covid-hospital-admissions.csv'
     assert hub_config.target_col_name == 'target'
     assert hub_config.viz_task_ids == sorted(['location'])
     assert hub_config.fetch_target_id == 'wk inc flu hosp'

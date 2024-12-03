@@ -78,6 +78,9 @@ class HubConfig:
         model_tasks_ele = tasks['rounds'][self.rounds_idx]['model_tasks'][self.model_tasks_idx]
         self.task_ids = sorted(model_tasks_ele['task_ids'].keys())
 
+        # set target_data_file_name
+        self.target_data_file_name = ptc_config.get('target_data_file_name')
+
         # set viz_task_ids and fetch_targets. recall: we assume there is only one target_metadata entry, only one
         # entry under its `target_keys`
         target_metadata = model_tasks_ele['target_metadata'][0]
@@ -136,13 +139,12 @@ class HubConfig:
                 return sorted(list(reference_dates))
 
 
-        # loop over every (reference_date X model_id) combination.
+        # loop over every (reference_date X model_id) combination
         as_ofs = {self.fetch_target_id: set()}
         for reference_date in self.reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
             for model_id in self.model_id_to_metadata:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
                 model_output_file = self.model_output_file_for_ref_date(model_id, reference_date)
                 if model_output_file:
-                    # todo xx extract to function, call from here and _generate_json_files()
                     if model_output_file.suffix == '.csv':
                         df = pd.read_csv(model_output_file, usecols=[self.target_col_name])
                     elif model_output_file.suffix in ['.parquet', '.pqt']:

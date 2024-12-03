@@ -95,7 +95,8 @@ def _generate_json_files(hub_config: HubConfig, output_dir: Path, is_regenerate:
         if not model_id_to_df:  # no model outputs for reference_date
             continue
 
-        # iterate over each (target X task_ids) combination, outputting to the corresponding json file
+        # iterate over each (target X task_ids) combination (for now we only support one target), outputting to the
+        # corresponding json file
         available_as_ofs = hub_config.get_available_as_ofs().values()
         newest_reference_date = max([max(date) for date in available_as_ofs])
         for task_ids_tuple in hub_config.fetch_task_ids_tuples:
