@@ -1,3 +1,4 @@
+import datetime
 import itertools
 import json
 from collections import defaultdict
@@ -5,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+import polars as pl
 import yaml
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
@@ -78,35 +80,37 @@ class HubConfig:
         model_tasks_ele = tasks['rounds'][self.rounds_idx]['model_tasks'][self.model_tasks_idx]
         self.task_ids = sorted(model_tasks_ele['task_ids'].keys())
 
-        # set target_data_file_name
+        # set target_data_file_name: either None (if the hub implements our new time-series target data standard) which
+        # means to use the fixed data file location "target-data/time-series.csv"), or the file name to look for in the
+        # "target-data" dir. use the function HubConfig.get_target_data_file_name() to access the actual file name
         self.target_data_file_name = ptc_config.get('target_data_file_name')
 
-        # set viz_task_ids and fetch_targets. recall: we assume there is only one target_metadata entry, only one
+        # set target info and viz_task_ids. recall: we require exactly one `target_metadata` entry, and only one
         # entry under its `target_keys`
         target_metadata = model_tasks_ele['target_metadata'][0]
         metadata_target_keys = target_metadata['target_keys']
+        self.target_id = list(metadata_target_keys.values())[0]
+        self.target_name = target_metadata['target_name']
         self.target_col_name = list(metadata_target_keys.keys())[0]
         self.viz_task_ids = sorted(set(self.task_ids) - {self.reference_date_col_name, self.target_date_col_name,
                                                          self.horizon_col_name, self.target_col_name})
-        self.fetch_target_id = list(metadata_target_keys.values())[0]
-        self.fetch_target_name = target_metadata['target_name']
 
-        # set fetch_task_ids
-        self.fetch_task_ids = defaultdict(list)  # union of task_ids required and optional fields. each can be null
+        # set viz_task_id_to_vals
+        self.viz_task_id_to_vals = defaultdict(list)  # union of task_ids required and optional fields. each can be null
         for viz_task_id in self.viz_task_ids:
             required_vals = model_tasks_ele['task_ids'][viz_task_id]['required']
             if required_vals:
-                self.fetch_task_ids[viz_task_id].extend(required_vals)
+                self.viz_task_id_to_vals[viz_task_id].extend(required_vals)
 
             optional_vals = model_tasks_ele['task_ids'][viz_task_id]['optional']
             if optional_vals:
-                self.fetch_task_ids[viz_task_id].extend(optional_vals)
+                self.viz_task_id_to_vals[viz_task_id].extend(optional_vals)
 
-        # set fetch_task_ids_tuples, sorted by self.viz_task_ids
-        viz_task_ids_values = [self.fetch_task_ids[viz_task_id] for viz_task_id in self.viz_task_ids]
-        self.fetch_task_ids_tuples = list(itertools.product(*viz_task_ids_values))
+        # set viz_task_ids_tuples, sorted by self.viz_task_ids
+        viz_task_ids_values = [self.viz_task_id_to_vals[viz_task_id] for viz_task_id in self.viz_task_ids]
+        self.viz_task_ids_tuples = list(itertools.product(*viz_task_ids_values))
 
-        # set fetch_reference_dates
+        # set reference_dates
         ref_date_task_id = model_tasks_ele['task_ids'][self.reference_date_col_name]
         self.reference_dates = (ref_date_task_id['required'] if ref_date_task_id['required'] else []) + \
                                (ref_date_task_id['optional'] if ref_date_task_id['optional'] else [])
@@ -126,7 +130,7 @@ class HubConfig:
         return None
 
 
-    def get_available_as_ofs(self) -> dict[str, list[str]]:
+    def get_available_ref_dates(self) -> dict[str, list[str]]:
         """
         Returns a list of reference_dates with at least one forecast file.
         """
@@ -140,7 +144,7 @@ class HubConfig:
 
 
         # loop over every (reference_date X model_id) combination
-        as_ofs = {self.fetch_target_id: set()}
+        target_id_to_ref_date = {self.target_id: set()}
         for reference_date in self.reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
             for model_id in self.model_id_to_metadata:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
                 model_output_file = self.model_output_file_for_ref_date(model_id, reference_date)
@@ -153,12 +157,36 @@ class HubConfig:
                         raise RuntimeError(f"unsupported model output file type: {model_output_file!r}. "
                                            f"Only .csv and .parquet are supported")
 
-                    df = df.loc[df[self.target_col_name] == self.fetch_target_id, :]
+                    df = df.loc[df[self.target_col_name] == self.target_id, :]
                     if not df.empty:
-                        as_ofs[self.fetch_target_id].add(reference_date)
+                        target_id_to_ref_date[self.target_id].add(reference_date)
 
-        return {fetch_target_id: get_sorted_values_or_first_config_ref_date(reference_dates)
-                for fetch_target_id, reference_dates in as_ofs.items()}
+        return {target_id: get_sorted_values_or_first_config_ref_date(reference_dates)
+                for target_id, reference_dates in target_id_to_ref_date.items()}
+
+
+    def get_target_data_df(self):
+        """
+        Loads the target data csv file from the hub repo for now, file path for target data is hard coded to 'target-data'.
+        Raises FileNotFoundError if target data file does not exist.
+        """
+        target_data_file_path = self.hub_dir / 'target-data' / self.get_target_data_file_name()
+        try:
+            # the override schema handles the 'US' location (the only location that doesn't parse as Int64)
+            # todo xx hard-coded column names
+            return pl.read_csv(target_data_file_path, schema_overrides={'location': pl.String,
+                                                                        'value': pl.Float64,
+                                                                        'observation': pl.Float64},
+                               null_values=["NA"])
+        except FileNotFoundError as error:
+            raise FileNotFoundError(f"target data file not found. {target_data_file_path=}, {error=}")
+
+
+    def get_target_data_file_name(self):
+        """
+        :return: the target data file name under the "target-data" dir to use
+        """
+        return self.target_data_file_name if self.target_data_file_name else 'time-series.csv'
 
 
 def _validate_hub_ptc_compatibility(ptc_config: dict, tasks: dict, model_metadata_schema: dict):
@@ -171,8 +199,17 @@ def _validate_hub_ptc_compatibility(ptc_config: dict, tasks: dict, model_metadat
     :raises ValidationError: if `tasks` is incompatible with predtimechart
     """
     # get the round and model_task
-    the_round = tasks['rounds'][ptc_config['rounds_idx']]
-    the_model_task = the_round['model_tasks'][ptc_config['model_tasks_idx']]
+    try:
+        the_round = tasks['rounds'][ptc_config['rounds_idx']]
+    except IndexError:
+        raise ValidationError(f"rounds_idx IndexError: #rounds={len(tasks['rounds'])}, "
+                              f"rounds_idx={ptc_config['rounds_idx']}")
+
+    try:
+        the_model_task = the_round['model_tasks'][ptc_config['model_tasks_idx']]
+    except IndexError:
+        raise ValidationError(f"model_tasks_idx IndexError: #model_tasks={len(the_round['model_tasks'])}, "
+                              f"model_tasks_idx={ptc_config['model_tasks_idx']}")
 
     # validate: only `model_tasks` groups with `quantile` output_types will be considered
     output_type = the_model_task['output_type']
@@ -186,17 +223,18 @@ def _validate_hub_ptc_compatibility(ptc_config: dict, tasks: dict, model_metadat
         raise ValidationError(f"some quantile output_type_ids are missing. required={req_quantile_levels}, "
                               f"found={set(quantile_levels)}")
 
+    # validate: in the specified `model_tasks` object within the specified `rounds` object, there is exactly one
+    # `target_metadata` entry, and only one entry under its `target_keys`
+    if len(the_model_task['target_metadata']) != 1:
+        raise ValidationError(f"not exactly one target_metadata object: {len(the_model_task['target_metadata'])}")
+
+    # validate: is_step_ahead
+    if not the_model_task['target_metadata'][0]['is_step_ahead']:
+        raise ValidationError("model_tasks entry's is_step_ahead must be true")
+
     # validate: model metadata must contain a boolean `designated_model` field
     if 'designated_model' not in model_metadata_schema['required']:
         raise ValidationError(f"'designated_model' not found in model metadata schema's 'required' section")
-
-    # validate: in the specified `model_tasks` object within the specified `rounds` object, all objects in the
-    # `target_metadata` list must have the same single key in the `target_keys` object
-    target_keys_keys = set()
-    for target_metadata_obj in the_model_task['target_metadata']:
-        target_keys_keys.update(target_metadata_obj['target_keys'].keys())
-    if len(target_keys_keys) != 1:
-        raise ValidationError(f"more than one unique `target_metadata` key found: {target_keys_keys}")
 
 
 def _validate_predtimechart_config(ptc_config: dict, tasks: dict):

@@ -44,22 +44,16 @@
         const taskIDsValsSorted = Object.keys(taskIDs).sort().map(key => taskIDs[key]);
         const taskIDsValsStr = replace_chars(taskIDsValsSorted.join(' '));
 
-        let target_path;
+        let filePath;
         const file_name = `${targetKeyStr}_${taskIDsValsStr}_${referenceDate}.json`;
         if (isForecast) {
-            // target_path = `./static/data/forecasts/${file_name}`;
-            target_path = `./${file_name}`;
+            // filePath = `./static/data/forecasts/${file_name}`;
+            filePath = `./forecasts/${file_name}`;
         } else {
-            // target_path = `./static/data/truth/${file_name}`;
-            console.warn("_fetchData(): target/truth data is currently unavailable");
-            return new Promise((resolve) => {
-                console.info("_fetchData(): resolving");
-                resolve({
-                    json: () => Promise.resolve({})
-                });
-            });
+            // filePath = `./static/data/truth/${file_name}`;
+            filePath = `./targets/${file_name}`;
         }
-        return fetch(target_path);  // Promise
+        return fetch(filePath);  // Promise
     }
 
     // load options and then initialize the component
