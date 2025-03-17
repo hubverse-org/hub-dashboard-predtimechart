@@ -9,8 +9,6 @@ from hub_predtimechart.hub_config import HubConfig
 
 
 def test_json_file_name():
-    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-
     # case: isForecast, targetKey, taskIDs, referenceDate: True, 'wk inc flu hosp', {location: US}, '2022-10-22'
     assert json_file_name('wk inc flu hosp', ('US',), '2022-10-22') == 'wk-inc-flu-hosp_US_2022-10-22.json'
 

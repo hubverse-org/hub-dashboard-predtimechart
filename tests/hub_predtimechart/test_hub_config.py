@@ -27,14 +27,14 @@ def test_hub_config_complex_forecast_hub():
     assert hub_config.target_data_file_name == 'covid-hospital-admissions.csv'
     assert hub_config.target_col_name == 'target'
     assert hub_config.viz_task_ids == sorted(['location'])
-    assert hub_config.fetch_target_id == 'wk inc flu hosp'
-    assert hub_config.fetch_target_name == 'incident influenza hospitalizations'
-    assert hub_config.fetch_task_ids == {
+    assert hub_config.target_id == 'wk inc flu hosp'
+    assert hub_config.target_name == 'incident influenza hospitalizations'
+    assert hub_config.viz_task_id_to_vals == {
         'location': ["US", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13", "15", "16", "17", "18",
                      "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34",
                      "35", "36", "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48", "49", "50", "51",
                      "53", "54", "55", "56", "72"]}
-    assert hub_config.fetch_task_ids_tuples == [
+    assert hub_config.viz_task_ids_tuples == [
         ("US",), ("01",), ("02",), ("04",), ("05",), ("06",), ("08",), ("09",), ("10",), ("11",), ("12",), ("13",),
         ("15",), ("16",), ("17",), ("18",), ("19",), ("20",), ("21",), ("22",), ("23",), ("24",), ("25",), ("26",),
         ("27",), ("28",), ("29",), ("30",), ("31",), ("32",), ("33",), ("34",), ("35",), ("36",), ("37",), ("38",),
@@ -72,10 +72,10 @@ def test_model_output_file_for_ref_date():
     assert file is None
 
 
-def test_get_available_as_ofs():
+def test_get_available_ref_dates():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
     hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
-    act_as_ofs = hub_config.get_available_as_ofs()
+    act_as_ofs = hub_config.get_available_ref_dates()
     exp_as_ofs = {'wk inc flu hosp': ['2022-10-22', '2022-11-19', '2022-12-17']}
     assert act_as_ofs == exp_as_ofs
 
@@ -161,8 +161,23 @@ def test__validate_hub_ptc_compatibility():
     # case: model_tasks_idx does not have a quantile output_type
     with open('tests/hubs/example-complex-forecast-hub/hub-config/predtimechart-config.yml') as fp:
         ecfh_ptc_config = yaml.safe_load(fp)
+    with open(Path('tests/hubs/example-complex-forecast-hub') / 'hub-config' / 'tasks.json') as fp:
+        ecfh_tasks = json.load(fp)
     with open(Path('tests/hubs/example-complex-scenario-hub') / 'hub-config' / 'tasks.json') as fp:
         ecsh_tasks = json.load(fp)
+    with open(Path('tests/hubs/FluSight-forecast-hub') / 'hub-config' / 'tasks.json') as fp:
+        fsfh_tasks = json.load(fp)
+
+    # case: 'rounds_idx' and 'model_tasks_idx' IndexError
+    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+    ecfh_ptc_config_copy['rounds_idx'] = 1  # only one round
+    with pytest.raises(ValidationError, match="rounds_idx IndexError"):
+        _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecfh_tasks, {})
+
+    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+    ecfh_ptc_config_copy['model_tasks_idx'] = 3  # only three model_tasks
+    with pytest.raises(ValidationError, match="model_tasks_idx IndexError"):
+        _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecfh_tasks, {})
 
     ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
     ecfh_ptc_config_copy['rounds_idx'] = 2
@@ -173,7 +188,7 @@ def test__validate_hub_ptc_compatibility():
     # case: not all quantile levels present (0.025, 0.25, 0.5, 0.75, 0.975)
     ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
     ecfh_ptc_config_copy['rounds_idx'] = 1
-    ecfh_ptc_config_copy['model_tasks_idx'] = 0  # 1|0 xx
+    ecfh_ptc_config_copy['model_tasks_idx'] = 0  # 1|0
 
     ecsh_tasks_copy = copy.deepcopy(ecsh_tasks)
     ecsh_round = ecsh_tasks_copy['rounds'][ecfh_ptc_config_copy['rounds_idx']]
@@ -182,24 +197,22 @@ def test__validate_hub_ptc_compatibility():
     with pytest.raises(ValidationError, match="some quantile output_type_ids are missing"):
         _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecsh_tasks_copy, {})
 
+    # case: model_tasks_idx is not is_step_ahead
+    fsfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+    fsfh_ptc_config_copy['model_tasks_idx'] = 2  # 0|2 is "is_step_ahead": false
+    with pytest.raises(ValidationError, match="model_tasks entry's is_step_ahead must be true"):
+        _validate_hub_ptc_compatibility(fsfh_ptc_config_copy, fsfh_tasks, {})
+
     # case: model metadata must contain a boolean `designated_model` field
-    with open(Path('tests/hubs/example-complex-forecast-hub') / 'hub-config' / 'tasks.json') as fp:
-        ecfh_tasks = json.load(fp)
     with pytest.raises(ValidationError, match="'designated_model' not found in model metadata schema"):
         _validate_hub_ptc_compatibility(ecfh_ptc_config, ecfh_tasks, {'required': []})
 
-    # case: two or more `target_metadata` objects have different `target_keys` keys
-    ecfh_tasks_copy = copy.deepcopy(ecfh_tasks)
-    ecfh_round = ecfh_tasks_copy['rounds'][ecfh_ptc_config['rounds_idx']]
-    ecfh_model_task = ecfh_round['model_tasks'][ecfh_ptc_config['model_tasks_idx']]
-    first_target_metadata_obj = ecfh_model_task['target_metadata'][0]
-    first_target_metadata_obj_copy = copy.deepcopy(first_target_metadata_obj)
-    first_target_metadata_obj_copy['target_keys'] = {"target2": "wk inc flu hosp"}  # dup of orig, which has 'target'
-    ecfh_model_task['target_metadata'].append(first_target_metadata_obj_copy)
-    with open(Path('tests/hubs/example-complex-forecast-hub') / 'hub-config' / 'model-metadata-schema.json') as fp:
-        ecfh_model_metadata_schema = json.load(fp)
-    with pytest.raises(ValidationError, match="more than one unique `target_metadata` key found"):
-        _validate_hub_ptc_compatibility(ecfh_ptc_config, ecfh_tasks_copy, ecfh_model_metadata_schema)
+    # case: not exactly one "target_metadata" object
+    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
+    ecfh_ptc_config_copy['rounds_idx'] = 0
+    ecfh_ptc_config_copy['model_tasks_idx'] = 0
+    with pytest.raises(ValidationError, match="not exactly one target_metadata object"):
+        _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecsh_tasks, {'required': []})
 
 
 def test_task_id_text_covid19_forecast_hub():
@@ -220,3 +233,20 @@ def test_task_id_text_covid19_forecast_hub():
             '66': 'Guam', '69': 'Northern Mariana Islands', '72': 'Puerto Rico', '74': 'U.S. Minor Outlying Islands',
             '78': 'Virgin Islands'}
     }
+
+
+def test_get_target_data_file_name():
+    # hub that predates the new target data standard file name. specifies file name in hub_config.target_data_file_name
+    hub_dir = Path('tests/hubs/covid19-forecast-hub')
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    assert hub_config.get_target_data_file_name() == 'covid-hospital-admissions.csv'
+
+    # hub that predates the new target data standard file name. specifies file name in hub_config.target_data_file_name
+    hub_dir = Path('tests/hubs/FluSight-forecast-hub')
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    assert hub_config.get_target_data_file_name() == 'target-hospital-admissions.csv'
+
+    # hub that uses the new target data standard file name: "target-data/time-series.csv"
+    hub_dir = Path('tests/hubs/flu-metrocast')
+    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    assert hub_config.get_target_data_file_name() == 'time-series.csv'

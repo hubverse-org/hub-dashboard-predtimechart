@@ -1,0 +1,8 @@
+---
+rounds_idx: 0
+model_tasks_idx: 0  # "ILI ED visits" (NYC)
+reference_date_col_name: 'reference_date'
+target_date_col_name: 'target_end_date'
+horizon_col_name: 'horizon'
+initial_checked_models: [ 'epiENGAGE-Copycat', 'epiENGAGE-GBQR', 'epiENGAGE-INFLAenza', 'epiforecasts-dyngam' ]
+#target_data_file_name:  # this hub uses the default time-series target data: "target-data/time-series.csv"

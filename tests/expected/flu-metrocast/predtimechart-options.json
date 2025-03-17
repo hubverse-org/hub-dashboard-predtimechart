@@ -1,0 +1,33 @@
+{
+  "available_as_ofs": {
+    "ILI ED visits": ["2025-02-22", "2025-03-01"]
+  },
+  "current_date": "2025-03-01",
+  "initial_as_of": "2025-03-01",
+  "initial_checked_models": ["epiENGAGE-Copycat", "epiENGAGE-GBQR", "epiENGAGE-INFLAenza", "epiforecasts-dyngam"],
+  "initial_interval": "95%",
+  "initial_target_var": "ILI ED visits",
+  "initial_task_ids": {
+    "location": "NYC"
+  },
+  "initial_xaxis_range": null,
+  "intervals": ["0%", "50%", "95%"],
+  "models": ["epiENGAGE-Copycat", "epiENGAGE-GBQR", "epiENGAGE-INFLAenza", "epiforecasts-dyngam"],
+  "target_variables": [
+    {
+      "plot_text": "ED visits due to ILI",
+      "text": "ED visits due to ILI",
+      "value": "ILI ED visits"
+    }
+  ],
+  "task_ids": {
+    "location": [
+      {"text": "NYC", "value": "NYC"},
+      {"text": "Bronx", "value": "Bronx"},
+      {"text": "Brooklyn", "value": "Brooklyn"},
+      {"text": "Manhattan", "value": "Manhattan"},
+      {"text": "Queens", "value": "Queens"},
+      {"text": "Staten Island", "value": "Staten Island"}
+    ]
+  }
+}

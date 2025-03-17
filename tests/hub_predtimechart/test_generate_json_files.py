@@ -1,5 +1,4 @@
 import json
-import tempfile
 import shutil
 from pathlib import Path
 
@@ -27,6 +26,7 @@ def test_generate_json_files(tmp_path):
             exp_data = json.load(exp_fp)
             act_data = json.load(act_fp)
             assert act_data == exp_data
+
 
 def test_generate_json_files_skip_files(tmp_path):
     """

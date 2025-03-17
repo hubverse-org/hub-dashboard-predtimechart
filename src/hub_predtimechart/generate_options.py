@@ -28,14 +28,14 @@ def ptc_options_for_hub(hub_config: HubConfig):
 
     # set `target_variables` and `initial_target_var`. recall that we currently only support one target
     options = {}
-    options['target_variables'] = [{'value': hub_config.fetch_target_id,
-                                    'text': hub_config.fetch_target_name,
-                                    'plot_text': hub_config.fetch_target_name}]
+    options['target_variables'] = [{'value': hub_config.target_id,
+                                    'text': hub_config.target_name,
+                                    'plot_text': hub_config.target_name}]
     options['initial_target_var'] = options['target_variables'][0]['value']
 
     # set `task_ids` and `initial_task_ids`
     options['task_ids'] = {}
-    for task_id, task_values in hub_config.fetch_task_ids.items():  # ex: {'location': ["US", "01", ...], ...}
+    for task_id, task_values in hub_config.viz_task_id_to_vals.items():  # ex: {'location': ["US", "01", ...], ...}
         options['task_ids'][task_id] = [{'value': task_value, 'text': task_text(task_id, task_value)} for task_value in
                                         task_values]
     options['initial_task_ids'] = {task_id: task_values[0]['value'] for task_id, task_values in
@@ -48,7 +48,7 @@ def ptc_options_for_hub(hub_config: HubConfig):
     # set `available_as_ofs`, `initial_as_of`, and `current_date`
     # available_as_ofs is the subset of hub_config.reference_dates for which
     # there is at least one model output file
-    options['available_as_ofs'] = hub_config.get_available_as_ofs()
+    options['available_as_ofs'] = hub_config.get_available_ref_dates()
     options['initial_as_of'] = max([get_max_ref_date_or_first_config_ref_date(reference_dates)
                                     for reference_dates in options['available_as_ofs'].values()])
     options['current_date'] = options['initial_as_of']
