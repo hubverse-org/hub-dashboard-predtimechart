@@ -8,7 +8,7 @@ import polars as pl
 import structlog
 
 from hub_predtimechart.app.generate_json_files import json_file_name
-from hub_predtimechart.hub_config import HubConfig
+from hub_predtimechart.hub_config_ptc import HubConfigPtc
 from hub_predtimechart.util.logs import setup_logging
 
 
@@ -43,7 +43,7 @@ def main(hub_dir, ptc_config_file, target_out_dir):
     logger.info(f'main({hub_dir=}, {target_out_dir=}): entered')
 
     hub_dir = Path(hub_dir)
-    hub_config = HubConfig(hub_dir, Path(ptc_config_file))
+    hub_config = HubConfigPtc(hub_dir, Path(ptc_config_file))
 
     # for each location, generate target data file contents and then save as json
     json_files = []
@@ -59,7 +59,7 @@ def main(hub_dir, ptc_config_file, target_out_dir):
         # this app's caller to pass reference_date as a main() arg. having this as an input option could be useful if we
         #   want to be able to go back and build the previous target time series data files
         reference_date = reference_date_from_today().isoformat()  # a Saturday
-        file_name = json_file_name(hub_config.target_id, task_ids_tuple, reference_date)
+        file_name = json_file_name(hub_config.viz_target_id, task_ids_tuple, reference_date)
         location_data_dict = ptc_target_data(hub_config, target_data_df, task_ids_tuple, reference_date)
         json_files.append(target_out_dir / file_name)
         with open(target_out_dir / file_name, 'w') as fp:
@@ -68,7 +68,7 @@ def main(hub_dir, ptc_config_file, target_out_dir):
     logger.info(f'main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. ')
 
 
-def ptc_target_data(hub_config: HubConfig, target_data_df: pl.DataFrame, task_ids_tuple: tuple[str],
+def ptc_target_data(hub_config: HubConfigPtc, target_data_df: pl.DataFrame, task_ids_tuple: tuple[str],
                     reference_date: str | None):
     """
     Returns a dict for a single reference date and location in the target data format documented at https://github.com/reichlab/predtimechart?tab=readme-ov-file#fetchdata-truth-data-format.
@@ -82,10 +82,10 @@ def ptc_target_data(hub_config: HubConfig, target_data_df: pl.DataFrame, task_id
       "y": [2337, 2860, "..."]
     }
 
-    :param hub_config: a HubConfig
-    :param target_data_df: a pl.DataFrame that loaded from HubConfig.target_data_file_name
-    :param task_ids_tuple: a tuple as returned by HubConfig.fetch_task_ids_tuples
-    :param reference_date: a date from `hub_config.reference_dates` that's used to find the closest as_of in
+    :param hub_config: a HubConfigPtc
+    :param target_data_df: a pl.DataFrame that loaded from HubConfigPtc.target_data_file_name
+    :param task_ids_tuple: a tuple as returned by HubConfigPtc.fetch_task_ids_tuples
+    :param reference_date: a date from `hub_config.viz_reference_dates` that's used to find the closest as_of in
         `target_data_df` if that column is present. ignored if column is not present
     :return a dict as documented above with two keys: 'date' and 'y'
     """
@@ -107,7 +107,7 @@ def ptc_target_data(hub_config: HubConfig, target_data_df: pl.DataFrame, task_id
         observation_col_name = 'observation'
 
     if not hub_config.target_data_file_name:
-        target_data_df = target_data_df.filter(pl.col(hub_config.target_col_name) == hub_config.target_id)
+        target_data_df = target_data_df.filter(pl.col(hub_config.viz_target_col_name) == hub_config.viz_target_id)
     for task_id, task_id_value in zip(hub_config.viz_task_id_to_vals, task_ids_tuple):
         target_data_df = target_data_df.filter(pl.col(task_id) == task_id_value)
     target_data_df = target_data_df.sort(target_date_col_name)
