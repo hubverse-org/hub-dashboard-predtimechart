@@ -92,7 +92,7 @@ def ptc_target_data(hub_config: HubConfigPtc, target_data_df: pl.DataFrame, task
     # filter to max as_of that's <= reference_date if no hub_config.target_data_file_name and as_of column present in
     # target_data_df
     if (not hub_config.target_data_file_name) and ('as_of' in target_data_df.columns):
-        max_as_of = _max_as_of_le__reference_date(target_data_df, reference_date)
+        max_as_of = _max_as_of_le_reference_date(target_data_df, reference_date)
         if max_as_of:
             target_data_df = target_data_df.filter(pl.col('as_of') == max_as_of.isoformat())
 
@@ -133,7 +133,7 @@ def reference_date_from_today(now: date = None) -> date:
     return now + timedelta(days=days_to_saturday)
 
 
-def _max_as_of_le__reference_date(target_data_df: pl.DataFrame, reference_date: str) -> date:
+def _max_as_of_le_reference_date(target_data_df: pl.DataFrame, reference_date: str) -> date:
     """
     ptc_target_data() helper
 

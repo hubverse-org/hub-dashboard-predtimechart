@@ -7,7 +7,7 @@ import pytest
 from freezegun import freeze_time
 
 from hub_predtimechart.app.generate_target_json_files import reference_date_from_today, ptc_target_data, \
-    _max_as_of_le__reference_date
+    _max_as_of_le_reference_date
 from hub_predtimechart.hub_config_ptc import HubConfigPtc
 
 
@@ -86,12 +86,12 @@ def test_get_target_data_df_error_cases():
         hub_config.get_target_data_df()
 
 
-def test__max_as_of_le__reference_date():
+def test__max_as_of_le_reference_date():
     hub_dir = Path('tests/hubs/flu-metrocast')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     target_data_df = hub_config.get_target_data_df()
     for ref_date, exp_max_as_of in [('2025-01-29', None), ('2025-02-12', '2025-02-12'), ('2025-02-13', '2025-02-12'),
                                     ('2025-02-26', '2025-02-25')]:
-        act_max_as_of = _max_as_of_le__reference_date(target_data_df, ref_date)
+        act_max_as_of = _max_as_of_le_reference_date(target_data_df, ref_date)
         exp_max_as_of = date.fromisoformat(exp_max_as_of) if exp_max_as_of else exp_max_as_of
         assert act_max_as_of == exp_max_as_of
