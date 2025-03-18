@@ -7,12 +7,13 @@ import pytest
 import yaml
 from jsonschema.exceptions import ValidationError
 
-from hub_predtimechart.hub_config import HubConfig, _validate_predtimechart_config, _validate_hub_ptc_compatibility
+from hub_predtimechart.hub_config_ptc import HubConfigPtc, _validate_hub_ptc_compatibility, \
+    _validate_predtimechart_config
 
 
 def test_hub_config_complex_forecast_hub():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     assert hub_config.hub_dir == hub_dir
     assert hub_config.rounds_idx == 0  # 'rounds'[0]
     assert hub_config.model_tasks_idx == 2  # 'rounds'[0]['model_tasks'][2]
@@ -23,12 +24,11 @@ def test_hub_config_complex_forecast_hub():
     assert hub_config.disclaimer == "Most forecasts have failed to reliably predict rapid changes in the trends of reported cases and hospitalizations. Due to this limitation, they should not be relied upon for decisions about the possibility or timing of rapid changes in trends."
     assert (sorted(list(hub_config.model_id_to_metadata.keys())) ==
             sorted(['Flusight-baseline', 'MOBS-GLEAM_FLUH', 'PSI-DICE']))
-    assert hub_config.task_ids == sorted(['reference_date', 'target', 'horizon', 'location', 'target_end_date'])
     assert hub_config.target_data_file_name == 'covid-hospital-admissions.csv'
-    assert hub_config.target_col_name == 'target'
+    assert hub_config.viz_target_col_name == 'target'
     assert hub_config.viz_task_ids == sorted(['location'])
-    assert hub_config.target_id == 'wk inc flu hosp'
-    assert hub_config.target_name == 'incident influenza hospitalizations'
+    assert hub_config.viz_target_id == 'wk inc flu hosp'
+    assert hub_config.viz_target_name == 'incident influenza hospitalizations'
     assert hub_config.viz_task_id_to_vals == {
         'location': ["US", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13", "15", "16", "17", "18",
                      "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34",
@@ -40,7 +40,7 @@ def test_hub_config_complex_forecast_hub():
         ("27",), ("28",), ("29",), ("30",), ("31",), ("32",), ("33",), ("34",), ("35",), ("36",), ("37",), ("38",),
         ("39",), ("40",), ("41",), ("42",), ("44",), ("45",), ("46",), ("47",), ("48",), ("49",), ("50",), ("51",),
         ("53",), ("54",), ("55",), ("56",), ("72",)]
-    assert hub_config.reference_dates == [
+    assert hub_config.viz_reference_dates == [
         "2022-10-22", "2022-10-29", "2022-11-05", "2022-11-12", "2022-11-19", "2022-11-26", "2022-12-03", "2022-12-10",
         "2022-12-17", "2022-12-24", "2022-12-31", "2023-01-07", "2023-01-14", "2023-01-21", "2023-01-28", "2023-02-04",
         "2023-02-11", "2023-02-18", "2023-02-25", "2023-03-04", "2023-03-11", "2023-03-18", "2023-03-25", "2023-04-01",
@@ -49,13 +49,13 @@ def test_hub_config_complex_forecast_hub():
 
 def test_hub_config_complex_forecast_hub_no_disclaimer():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir, Path('tests/configs/example-complex-no-disclaimer.yml'))
+    hub_config = HubConfigPtc(hub_dir, Path('tests/configs/example-complex-no-disclaimer.yml'))
     assert hub_config.disclaimer is None
 
 
 def test_model_output_file_for_ref_date():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
 
     # case: exists
     file = hub_config.model_output_file_for_ref_date('Flusight-baseline', "2022-10-22")
@@ -74,7 +74,7 @@ def test_model_output_file_for_ref_date():
 
 def test_get_available_ref_dates():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     act_as_ofs = hub_config.get_available_ref_dates()
     exp_as_ofs = {'wk inc flu hosp': ['2022-10-22', '2022-11-19', '2022-12-17']}
     assert act_as_ofs == exp_as_ofs
@@ -83,13 +83,13 @@ def test_get_available_ref_dates():
 def test_hub_dir_existence():
     with pytest.raises(RuntimeError, match="hub_dir not found"):
         hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-        HubConfig(hub_dir / 'nonexistent-dir', None)
+        HubConfigPtc(hub_dir / 'nonexistent-dir', None)
 
 
 def test_predtimechart_config_file_existence():
     with pytest.raises(RuntimeError, match="predtimechart config file not found"):
         hub_dir = Path('tests/hubs/no-ptc-config-hub')
-        HubConfig(hub_dir, hub_dir / 'nonexistent-file.yml')
+        HubConfigPtc(hub_dir, hub_dir / 'nonexistent-file.yml')
 
 
 def test__validate_predtimechart_config():
@@ -100,12 +100,12 @@ def test__validate_predtimechart_config():
     # test a known invalid hub
     with pytest.raises(RuntimeError, match="invalid ptc_config_file"):
         hub_dir = Path('tests/hubs/invalid-ptc-config-hub')
-        HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+        HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
 
-    # test that HubConfig() calls `_validate_predtimechart_config()`, and then test against that function directly
-    with patch('hub_predtimechart.hub_config._validate_predtimechart_config') as validate_mock:
+    # test that HubConfigPtc() calls `_validate_predtimechart_config()`, and then test against that function directly
+    with patch('hub_predtimechart.hub_config_ptc._validate_predtimechart_config') as validate_mock:
         hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-        HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+        HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
         validate_mock.assert_called_once()
 
     # get a valid config file to work with and then invalidate it in a few different ways to make sure ptc_schema.py is
@@ -152,10 +152,10 @@ def test__validate_hub_ptc_compatibility():
     Tests the constraints identified in README.MD > Assumptions/limitations .
     """
 
-    # test that HubConfig() calls `_validate_hub_ptc_compatibility()`, and then test against that function directly
-    with patch('hub_predtimechart.hub_config._validate_hub_ptc_compatibility') as validate_mock:
+    # test that HubConfigPtc() calls `_validate_hub_ptc_compatibility()`, and then test against that function directly
+    with patch('hub_predtimechart.hub_config_ptc._validate_hub_ptc_compatibility') as validate_mock:
         hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-        HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+        HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
         validate_mock.assert_called_once()
 
     # case: model_tasks_idx does not have a quantile output_type
@@ -217,7 +217,7 @@ def test__validate_hub_ptc_compatibility():
 
 def test_task_id_text_covid19_forecast_hub():
     hub_dir = Path('tests/hubs/covid19-forecast-hub')
-    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     assert hub_config.task_id_text == {
         'location': {
             'US': 'United States', '01': 'Alabama', '02': 'Alaska', '04': 'Arizona', '05': 'Arkansas',
@@ -238,15 +238,15 @@ def test_task_id_text_covid19_forecast_hub():
 def test_get_target_data_file_name():
     # hub that predates the new target data standard file name. specifies file name in hub_config.target_data_file_name
     hub_dir = Path('tests/hubs/covid19-forecast-hub')
-    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     assert hub_config.get_target_data_file_name() == 'covid-hospital-admissions.csv'
 
     # hub that predates the new target data standard file name. specifies file name in hub_config.target_data_file_name
     hub_dir = Path('tests/hubs/FluSight-forecast-hub')
-    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     assert hub_config.get_target_data_file_name() == 'target-hospital-admissions.csv'
 
     # hub that uses the new target data standard file name: "target-data/time-series.csv"
     hub_dir = Path('tests/hubs/flu-metrocast')
-    hub_config = HubConfig(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     assert hub_config.get_target_data_file_name() == 'time-series.csv'

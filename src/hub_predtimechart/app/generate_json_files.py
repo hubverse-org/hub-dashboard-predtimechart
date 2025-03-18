@@ -8,7 +8,7 @@ import structlog
 
 from hub_predtimechart.generate_data import forecast_data_for_model_df
 from hub_predtimechart.generate_options import ptc_options_for_hub
-from hub_predtimechart.hub_config import HubConfig
+from hub_predtimechart.hub_config_ptc import HubConfigPtc
 from hub_predtimechart.util.logs import setup_logging
 
 
@@ -49,7 +49,7 @@ def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir, regenera
     """
     logger.info(f"main({hub_dir=}, {ptc_config_file=}, {options_file_out=}, {forecasts_out_dir=}, {regenerate=}): "
                 f"entered")
-    hub_config = HubConfig(Path(hub_dir), Path(ptc_config_file))
+    hub_config = HubConfigPtc(Path(hub_dir), Path(ptc_config_file))
     json_files = _generate_json_files(hub_config, Path(forecasts_out_dir), regenerate)
     _generate_options_file(hub_config, Path(options_file_out))
     logger.info(f"main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. "
@@ -60,7 +60,7 @@ def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir, regenera
 # _generate_json_files() and helpers
 #
 
-def _generate_json_files(hub_config: HubConfig, output_dir: Path, is_regenerate: bool = False) -> list[Path]:
+def _generate_json_files(hub_config: HubConfigPtc, output_dir: Path, is_regenerate: bool = False) -> list[Path]:
     """
     Generates forecast json files from `hub_config`. Returns a list of Paths of the generated files.
 
@@ -74,10 +74,10 @@ def _generate_json_files(hub_config: HubConfig, output_dir: Path, is_regenerate:
     # their model_output files
     available_as_ofs = hub_config.get_available_ref_dates().values()
     newest_reference_date = max([max(date) for date in available_as_ofs])
-    df_cols_to_use = ([hub_config.target_col_name] + hub_config.viz_task_ids +
+    df_cols_to_use = ([hub_config.viz_target_col_name] + hub_config.viz_task_ids +
                       [hub_config.target_date_col_name, 'output_type', 'output_type_id', 'value'])
     json_files = []  # list of files actually loaded
-    for reference_date in hub_config.reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
+    for reference_date in hub_config.viz_reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
         # set model_id_to_df
         model_id_to_df: dict[str, pd.DataFrame] = {}
         for model_id in hub_config.model_id_to_metadata:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
@@ -97,7 +97,7 @@ def _generate_json_files(hub_config: HubConfig, output_dir: Path, is_regenerate:
         # iterate over each (target X task_ids) combination (for now we only support one target), outputting to the
         # corresponding json file
         for task_ids_tuple in hub_config.viz_task_ids_tuples:
-            json_file = generate_forecast_json_file(hub_config, model_id_to_df, output_dir, hub_config.target_id,
+            json_file = generate_forecast_json_file(hub_config, model_id_to_df, output_dir, hub_config.viz_target_id,
                                                     task_ids_tuple, reference_date, newest_reference_date,
                                                     is_regenerate)
             if json_file:
@@ -144,7 +144,7 @@ def json_file_name(target: str, task_ids_tuple: tuple[str], reference_date: str)
 
     :param target: string naming the target of interest
     :param task_ids_tuple: a tuple of task id values. ex: ('US', 'A-2021-03-05'). NB: assumes these are sorted according
-        to HubConfig.viz_task_ids
+        to HubConfigPtc.viz_task_ids
     :param reference_date: string naming the reference_date of interest
     :return: a "valid" file name
     """
@@ -164,7 +164,7 @@ def json_file_name(target: str, task_ids_tuple: tuple[str], reference_date: str)
 # _generate_options_file()
 #
 
-def _generate_options_file(hub_config: HubConfig, options_file: Path):
+def _generate_options_file(hub_config: HubConfigPtc, options_file: Path):
     """
     Generates a predtimechart config .json file from `hub_config` as documented at `ptc_options_for_hub()`, saving it to
     `options_file`. NB: `options_file` is overwritten if already present.

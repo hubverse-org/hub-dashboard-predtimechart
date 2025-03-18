@@ -2,10 +2,10 @@ from collections import defaultdict
 
 import pandas as pd
 
-from hub_predtimechart.hub_config import HubConfig
+from hub_predtimechart.hub_config_ptc import HubConfigPtc
 
 
-def forecast_data_for_model_df(hub_config: HubConfig, model_df: pd.DataFrame, target: str, task_ids_tuple: tuple[str]):
+def forecast_data_for_model_df(hub_config: HubConfigPtc, model_df: pd.DataFrame, target: str, task_ids_tuple: tuple[str]):
     """
     Returns a dict for a single model in the forecast data format documented at https://github.com/reichlab/predtimechart?tab=readme-ov-file#fetchdata-forecasts-data-format .
     That is, looking at that example, this function returns the VALUE for a particular model, such as that of
@@ -24,7 +24,7 @@ def forecast_data_for_model_df(hub_config: HubConfig, model_df: pd.DataFrame, ta
     a JSON file.
     """
     # filter rows using a sequence of `query()` calls
-    model_df = model_df.query(f"{hub_config.target_col_name} == '{target}'")
+    model_df = model_df.query(f"{hub_config.viz_target_col_name} == '{target}'")
 
     for idx, viz_task_id in enumerate(hub_config.viz_task_ids):  # gives us task_ids_tuple order
         # hub_config.viz_task_ids ex:  'location', 'scenario_id'

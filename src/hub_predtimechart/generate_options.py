@@ -1,11 +1,11 @@
-from hub_predtimechart.hub_config import HubConfig
+from hub_predtimechart.hub_config_ptc import HubConfigPtc
 
 
-def ptc_options_for_hub(hub_config: HubConfig):
+def ptc_options_for_hub(hub_config: HubConfigPtc):
     """
     Returns predtimechart options dict for `hub_config` - see https://github.com/reichlab/predtimechart?tab=readme-ov-file#options-object .
 
-    :param hub_config: a HubConfig
+    :param hub_config: a HubConfigPtc
     """
 
 
@@ -21,16 +21,16 @@ def ptc_options_for_hub(hub_config: HubConfig):
 
     def get_max_ref_date_or_first_config_ref_date(reference_dates):
         if len(reference_dates) == 0:
-            return min(hub_config.reference_dates)
+            return min(hub_config.viz_reference_dates)
         else:
             return max(reference_dates)
 
 
     # set `target_variables` and `initial_target_var`. recall that we currently only support one target
     options = {}
-    options['target_variables'] = [{'value': hub_config.target_id,
-                                    'text': hub_config.target_name,
-                                    'plot_text': hub_config.target_name}]
+    options['target_variables'] = [{'value': hub_config.viz_target_id,
+                                    'text': hub_config.viz_target_name,
+                                    'plot_text': hub_config.viz_target_name}]
     options['initial_target_var'] = options['target_variables'][0]['value']
 
     # set `task_ids` and `initial_task_ids`
@@ -46,7 +46,7 @@ def ptc_options_for_hub(hub_config: HubConfig):
     options['initial_interval'] = options['intervals'][-1]
 
     # set `available_as_ofs`, `initial_as_of`, and `current_date`
-    # available_as_ofs is the subset of hub_config.reference_dates for which
+    # available_as_ofs is the subset of hub_config.viz_reference_dates for which
     # there is at least one model output file
     options['available_as_ofs'] = hub_config.get_available_ref_dates()
     options['initial_as_of'] = max([get_max_ref_date_or_first_config_ref_date(reference_dates)
