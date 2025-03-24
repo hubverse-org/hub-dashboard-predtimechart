@@ -5,7 +5,8 @@ import pandas as pd
 from hub_predtimechart.hub_config_ptc import HubConfigPtc
 
 
-def forecast_data_for_model_df(hub_config: HubConfigPtc, model_df: pd.DataFrame, target: str, task_ids_tuple: tuple[str]):
+def forecast_data_for_model_df(hub_config: HubConfigPtc, model_df: pd.DataFrame, target: str,
+                               task_ids_tuple: tuple[str]):
     """
     Returns a dict for a single model in the forecast data format documented at https://github.com/reichlab/predtimechart?tab=readme-ov-file#fetchdata-forecasts-data-format .
     That is, looking at that example, this function returns the VALUE for a particular model, such as that of
@@ -23,10 +24,17 @@ def forecast_data_for_model_df(hub_config: HubConfigPtc, model_df: pd.DataFrame,
     This means it's up to the caller to assemble outputs from individual models to form the final output that's saved to
     a JSON file.
     """
-    # filter rows using a sequence of `query()` calls
-    model_df = model_df.query(f"{hub_config.viz_target_col_name} == '{target}'")
+    # get the ModelTask corresponding to target. raise RuntimeError if not exactly one found
+    model_tasks_for_target = [model_task for model_task in hub_config.model_tasks if model_task.viz_target_id == target]
+    if len(model_tasks_for_target) != 1:
+        raise RuntimeError(f"not exactly one ModelTask found for target='{target}'")
 
-    for idx, viz_task_id in enumerate(hub_config.viz_task_ids):  # gives us task_ids_tuple order
+    model_task = model_tasks_for_target[0]
+
+    # filter rows using a sequence of `query()` calls
+    model_df = model_df.query(f"{model_task.viz_target_col_name} == '{target}'")
+
+    for idx, viz_task_id in enumerate(model_task.viz_task_ids):  # gives us task_ids_tuple order
         # hub_config.viz_task_ids ex:  'location', 'scenario_id'
         # task_ids_tuple          ex: ('US',       'A-2022-05-09')
         viz_task_id_value = task_ids_tuple[idx]

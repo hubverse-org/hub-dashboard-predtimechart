@@ -8,14 +8,13 @@ import yaml
 from jsonschema.exceptions import ValidationError
 
 from hub_predtimechart.hub_config_ptc import HubConfigPtc, _validate_hub_ptc_compatibility, \
-    _validate_predtimechart_config
+    _validate_predtimechart_config, ModelTask
 
 
 def test_hub_config_complex_forecast_hub():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     assert hub_config.rounds_idx == 0  # 'rounds'[0]
-    assert hub_config.model_tasks_idx == 2  # 'rounds'[0]['model_tasks'][2]
     assert hub_config.reference_date_col_name == 'reference_date'
     assert hub_config.target_date_col_name == 'target_end_date'
     assert hub_config.horizon_col_name == 'horizon'
@@ -24,22 +23,24 @@ def test_hub_config_complex_forecast_hub():
     assert (sorted(list(hub_config.model_id_to_metadata.keys())) ==
             sorted(['Flusight-baseline', 'MOBS-GLEAM_FLUH', 'PSI-DICE']))
     assert hub_config.target_data_file_name == 'covid-hospital-admissions.csv'
-    assert hub_config.viz_target_col_name == 'target'
-    assert hub_config.viz_task_ids == sorted(['location'])
-    assert hub_config.viz_target_id == 'wk inc flu hosp'
-    assert hub_config.viz_target_name == 'incident influenza hospitalizations'
-    assert hub_config.viz_task_id_to_vals == {
+
+    model_task_0 = hub_config.model_tasks[0]  # only one
+    assert model_task_0.viz_target_id == 'wk inc flu hosp'
+    assert model_task_0.viz_target_name == 'incident influenza hospitalizations'
+    assert model_task_0.viz_target_col_name == 'target'
+    assert model_task_0.viz_task_ids == sorted(['location'])
+    assert model_task_0.viz_task_id_to_vals == {
         'location': ["US", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13", "15", "16", "17", "18",
                      "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34",
                      "35", "36", "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48", "49", "50", "51",
                      "53", "54", "55", "56", "72"]}
-    assert hub_config.viz_task_ids_tuples == [
+    assert model_task_0.viz_task_ids_tuples == [
         ("US",), ("01",), ("02",), ("04",), ("05",), ("06",), ("08",), ("09",), ("10",), ("11",), ("12",), ("13",),
         ("15",), ("16",), ("17",), ("18",), ("19",), ("20",), ("21",), ("22",), ("23",), ("24",), ("25",), ("26",),
         ("27",), ("28",), ("29",), ("30",), ("31",), ("32",), ("33",), ("34",), ("35",), ("36",), ("37",), ("38",),
         ("39",), ("40",), ("41",), ("42",), ("44",), ("45",), ("46",), ("47",), ("48",), ("49",), ("50",), ("51",),
         ("53",), ("54",), ("55",), ("56",), ("72",)]
-    assert hub_config.viz_reference_dates == [
+    assert model_task_0.viz_reference_dates == [
         "2022-10-22", "2022-10-29", "2022-11-05", "2022-11-12", "2022-11-19", "2022-11-26", "2022-12-03", "2022-12-10",
         "2022-12-17", "2022-12-24", "2022-12-31", "2023-01-07", "2023-01-14", "2023-01-21", "2023-01-28", "2023-02-04",
         "2023-02-11", "2023-02-18", "2023-02-25", "2023-03-04", "2023-03-11", "2023-03-18", "2023-03-25", "2023-04-01",
@@ -74,8 +75,9 @@ def test_model_output_file_for_ref_date():
 def test_get_available_ref_dates():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
-    act_as_ofs = hub_config.get_available_ref_dates()
-    exp_as_ofs = {'wk inc flu hosp': ['2022-10-22', '2022-11-19', '2022-12-17']}
+    model_task_0 = hub_config.model_tasks[0]
+    act_as_ofs = model_task_0.get_available_ref_dates()
+    exp_as_ofs = ['2022-10-22', '2022-11-19', '2022-12-17']
     assert act_as_ofs == exp_as_ofs
 
 
@@ -93,7 +95,7 @@ def test__validate_predtimechart_config():
     # test a known invalid hub
     with pytest.raises(RuntimeError, match="invalid ptc_config_file"):
         hub_dir = Path('tests/hubs/invalid-ptc-config-hub')
-        HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+        HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')  # missing `rounds_ids`
 
     # test that HubConfigPtc() calls `_validate_predtimechart_config()`, and then test against that function directly
     with patch('hub_predtimechart.hub_config_ptc._validate_predtimechart_config') as validate_mock:
@@ -118,18 +120,13 @@ def test__validate_predtimechart_config():
     with pytest.raises(ValidationError, match="\'\' should be non-empty"):
         _validate_predtimechart_config(ecfh_ptc_config_copy, {})  # tasks not necessary
 
-    # case: rounds_idx or model_tasks_idx is out of range
+    # case: rounds_idx is out of range
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
     with open(hub_dir / 'hub-config' / 'tasks.json') as fp:
         ecfh_tasks = json.load(fp)
     ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
     ecfh_ptc_config_copy['rounds_idx'] = 1  # there is only one `rounds`, so this is invalid
     with pytest.raises(ValidationError, match="invalid rounds_idx"):
-        _validate_predtimechart_config(ecfh_ptc_config_copy, ecfh_tasks)
-
-    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
-    ecfh_ptc_config_copy['model_tasks_idx'] = 3  # there are only three `model_tasks` within round 0, so this is invalid
-    with pytest.raises(ValidationError, match="invalid model_tasks_idx"):
         _validate_predtimechart_config(ecfh_ptc_config_copy, ecfh_tasks)
 
     # case: column not found
@@ -151,61 +148,45 @@ def test__validate_hub_ptc_compatibility():
         HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
         validate_mock.assert_called_once()
 
-    # case: model_tasks_idx does not have a quantile output_type
-    with open('tests/hubs/example-complex-forecast-hub/hub-config/predtimechart-config.yml') as fp:
-        ecfh_ptc_config = yaml.safe_load(fp)
-    with open(Path('tests/hubs/example-complex-forecast-hub') / 'hub-config' / 'tasks.json') as fp:
-        ecfh_tasks = json.load(fp)
-    with open(Path('tests/hubs/example-complex-scenario-hub') / 'hub-config' / 'tasks.json') as fp:
-        ecsh_tasks = json.load(fp)
-    with open(Path('tests/hubs/FluSight-forecast-hub') / 'hub-config' / 'tasks.json') as fp:
-        fsfh_tasks = json.load(fp)
+    # case: no applicable model_task entries
+    with pytest.raises(ValidationError, match="no applicable model_task entries were found"):
+        hub_dir = Path('tests/hubs/no-applicable-tasks-hub')
+        hub_config_ptc = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+        _validate_hub_ptc_compatibility(hub_config_ptc)
 
-    # case: 'rounds_idx' and 'model_tasks_idx' IndexError
-    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
-    ecfh_ptc_config_copy['rounds_idx'] = 1  # only one round
-    with pytest.raises(ValidationError, match="rounds_idx IndexError"):
-        _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecfh_tasks, {})
-
-    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
-    ecfh_ptc_config_copy['model_tasks_idx'] = 3  # only three model_tasks
-    with pytest.raises(ValidationError, match="model_tasks_idx IndexError"):
-        _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecfh_tasks, {})
-
-    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
-    ecfh_ptc_config_copy['rounds_idx'] = 2
-    ecfh_ptc_config_copy['model_tasks_idx'] = 0  # 2|0 only has "sample" "output_type"
-    with pytest.raises(ValidationError, match="no quantile output_type found"):
-        _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecsh_tasks, {})
-
-    # case: not all quantile levels present (0.025, 0.25, 0.5, 0.75, 0.975)
-    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
-    ecfh_ptc_config_copy['rounds_idx'] = 1
-    ecfh_ptc_config_copy['model_tasks_idx'] = 0  # 1|0
-
-    ecsh_tasks_copy = copy.deepcopy(ecsh_tasks)
-    ecsh_round = ecsh_tasks_copy['rounds'][ecfh_ptc_config_copy['rounds_idx']]
-    ecsh_model_task = ecsh_round['model_tasks'][ecfh_ptc_config_copy['model_tasks_idx']]
-    ecsh_model_task['output_type']['quantile']['output_type_id']['required'] = [0.025, 0.25, 0.75, 0.975]  # no 0.5
+    hub_dir = Path('tests/hubs/covid19-forecast-hub')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     with pytest.raises(ValidationError, match="some quantile output_type_ids are missing"):
-        _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecsh_tasks_copy, {})
-
-    # case: model_tasks_idx is not is_step_ahead
-    fsfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
-    fsfh_ptc_config_copy['model_tasks_idx'] = 2  # 0|2 is "is_step_ahead": false
-    with pytest.raises(ValidationError, match="model_tasks entry's is_step_ahead must be true"):
-        _validate_hub_ptc_compatibility(fsfh_ptc_config_copy, fsfh_tasks, {})
+        hub_config.model_tasks[0].task['output_type']['quantile']['output_type_id']['required'] = \
+            [0.025, 0.25, 0.75, 0.975]  # no 0.5
+        _validate_hub_ptc_compatibility(hub_config)
 
     # case: model metadata must contain a boolean `designated_model` field
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    hub_config.model_metadata_schema['required'].remove('designated_model')
     with pytest.raises(ValidationError, match="'designated_model' not found in model metadata schema"):
-        _validate_hub_ptc_compatibility(ecfh_ptc_config, ecfh_tasks, {'required': []})
+        _validate_hub_ptc_compatibility(hub_config)
 
-    # case: not exactly one "target_metadata" object
-    ecfh_ptc_config_copy = copy.deepcopy(ecfh_ptc_config)
-    ecfh_ptc_config_copy['rounds_idx'] = 0
-    ecfh_ptc_config_copy['model_tasks_idx'] = 0
+    # case: must be exactly one `target_metadata` entry
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    target_metadata_list = hub_config.model_tasks[0].task['target_metadata']
+    target_metadata_list.append(target_metadata_list[0])
     with pytest.raises(ValidationError, match="not exactly one target_metadata object"):
-        _validate_hub_ptc_compatibility(ecfh_ptc_config_copy, ecsh_tasks, {'required': []})
+        _validate_hub_ptc_compatibility(hub_config)
+
+    # case: only one entry under `target_metadata` entry's `target_keys`
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    target_keys = hub_config.model_tasks[0].task['target_metadata'][0]['target_keys']
+    target_keys['second_target_key'] = 'second_target_key_value'
+    with pytest.raises(ValidationError, match="not exactly one target_metadata target_keys entry"):
+        _validate_hub_ptc_compatibility(hub_config)
+
+    # case: all model_task entries have the same task_ids
+    hub_dir = Path('tests/hubs/flu-metrocast')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    hub_config.model_tasks[0].task['task_ids']['new_task'] = {'required': None, 'optional': None}
+    with pytest.raises(ValidationError, match="not all model_task entries have the same task_ids"):
+        _validate_hub_ptc_compatibility(hub_config)
 
 
 def test_task_id_text_covid19_forecast_hub():
@@ -243,3 +224,35 @@ def test_get_target_data_file_name():
     hub_dir = Path('tests/hubs/flu-metrocast')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     assert hub_config.get_target_data_file_name() == 'time-series.csv'
+
+
+def test_model_tasks_instance_list():
+    for hub_dir, exp_len in [('tests/hubs/covid19-forecast-hub', 1),
+                             ('tests/hubs/example-complex-forecast-hub', 1),
+                             ('tests/hubs/flu-metrocast', 2),
+                             ('tests/hubs/FluSight-forecast-hub', 1)]:
+        hub_dir = Path(hub_dir)
+        hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+        assert len(hub_config.model_tasks) == exp_len
+        assert all([isinstance(model_task, ModelTask) for model_task in hub_config.model_tasks])
+
+
+def test_model_task_instance_flu_metrocast():
+    hub_dir = Path('tests/hubs/flu-metrocast')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    model_task_0 = hub_config.model_tasks[0]
+    assert model_task_0.viz_target_id == 'ILI ED visits'
+    assert model_task_0.viz_target_name == 'ED visits due to ILI'
+    assert model_task_0.viz_target_col_name == 'target'
+    assert model_task_0.viz_task_ids == ['location']
+    assert model_task_0.viz_task_id_to_vals == {
+        'location': ['NYC', 'Bronx', 'Brooklyn', 'Manhattan', 'Queens', 'Staten Island']
+    }
+    assert model_task_0.viz_task_ids_tuples == [
+        ('NYC',), ('Bronx',), ('Brooklyn',), ('Manhattan',), ('Queens',), ('Staten Island',)
+    ]
+    assert model_task_0.viz_reference_dates == [
+        '2025-01-25', '2025-02-01', '2025-02-08', '2025-02-15', '2025-02-22', '2025-03-01', '2025-03-08', '2025-03-15',
+        '2025-03-22', '2025-03-29', '2025-04-05', '2025-04-12', '2025-04-19', '2025-04-26', '2025-05-03', '2025-05-10',
+        '2025-05-17', '2025-05-24', '2025-05-31'
+    ]

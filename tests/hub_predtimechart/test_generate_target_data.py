@@ -19,7 +19,7 @@ def test_ptc_target_data_flusight_forecast_hub():
         task_ids_tuple = (loc,)
         with open(f'tests/expected/FluSight-forecast-hub/target/wk-inc-flu-hosp_{loc}.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config, target_data_df, task_ids_tuple, None)
+            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, None)
             assert act_data == exp_data
 
 
@@ -31,7 +31,7 @@ def test_ptc_target_data_covid19_forecast_hub():
         task_ids_tuple = (loc,)
         with open(f'tests/expected/covid19-forecast-hub/target/wk-inc-covid-hosp_{loc}.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config, target_data_df, task_ids_tuple, None)
+            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, None)
             assert act_data == exp_data
 
 
@@ -39,15 +39,22 @@ def test_ptc_target_data_flu_metrocast():
     hub_dir = Path('tests/hubs/flu-metrocast')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     target_data_df = hub_config.get_target_data_df()
-    # 2025-02-25 is the newest as_of in tests/hubs/flu-metrocast time-series.csv. we use 2025-03-01 for
-    # reference_date b/c that's the one right after 2025-02-25 (but we could have used any reference_date after
-    # 2025-02-25)
+    # re: reference_date: 2025-02-25 is the newest as_of in tests/hubs/flu-metrocast time-series.csv. we use 2025-03-01
+    # for reference_date b/c that's the Saturday right after 2025-02-25, but we could have used any reference_date on or
+    # after 2025-02-25
     reference_date = '2025-03-01'
     for loc in ['Bronx', 'Manhattan']:
         task_ids_tuple = (loc,)
-        with open(f'tests/expected/flu-metrocast/target/ILI-ED-visits_{loc}_{reference_date}.json') as fp:
+        with open(f'tests/expected/flu-metrocast/targets/ILI-ED-visits_{loc}_2025-03-01.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config, target_data_df, task_ids_tuple, reference_date)
+            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, reference_date)
+            assert act_data == exp_data
+
+    for loc in ['Austin', 'Dallas']:
+        task_ids_tuple = (loc,)
+        with open(f'tests/expected/flu-metrocast/targets/Flu-ED-visits-pct_{loc}_2025-03-01.json') as fp:
+            exp_data = json.load(fp)
+            act_data = ptc_target_data(hub_config.model_tasks[1], target_data_df, task_ids_tuple, reference_date)
             assert act_data == exp_data
 
 

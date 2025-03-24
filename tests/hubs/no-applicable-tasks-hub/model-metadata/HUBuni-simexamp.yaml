@@ -1,0 +1,21 @@
+team_name: "Hub Complex Example 2"
+team_abbr: "HUBuni"
+model_name: "Example Model output 2"
+model_abbr: "simexamp"
+model_version: "1.0"
+model_contributors: [
+  {
+    "name": "Joe Bloggs",
+    "affiliation": "",
+    "email": "jb@email.com"
+  }
+]
+website_url: "https://www.model-example.website"
+license: "CC-BY-4.0"
+model_details: [
+  {
+   "data_inputs": "",
+   "methods": ""
+  }
+]
+ensemble_of_hub_models: false

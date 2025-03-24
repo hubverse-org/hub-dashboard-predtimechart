@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from hub_predtimechart.app.generate_json_files import json_file_name
 from hub_predtimechart.generate_data import forecast_data_for_model_df
@@ -66,6 +67,21 @@ def test_forecast_data_for_model_df_complex_forecast_hub_01():
     assert act_data == exp_data['PSI-DICE']
 
 
+def test_forecast_data_for_model_df_flu_metrocast_bronx():
+    hub_dir = Path('tests/hubs/flu-metrocast')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+
+    with open('tests/expected/flu-metrocast/forecasts/ILI-ED-visits_Bronx_2025-02-22.json') as fp:
+        exp_data = json.load(fp)
+    target = 'ILI ED visits'
+    task_ids_tuple = ('Bronx',)
+
+    # case: epiENGAGE-GBQR
+    model_output_file = hub_dir / 'model-output/epiENGAGE-GBQR/2025-02-22-epiENGAGE-GBQR.csv'
+    act_data = forecast_data_for_model_df(hub_config, pd.read_csv(model_output_file), target, task_ids_tuple)
+    assert act_data == exp_data['epiENGAGE-GBQR']
+
+
 def test_forecast_data_for_model_df_no_data():
     hub_dir = Path('tests/hubs/example-complex-forecast-hub')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
@@ -77,3 +93,11 @@ def test_forecast_data_for_model_df_no_data():
     model_output_file = hub_dir / 'model-output/Flusight-baseline/2022-10-22-Flusight-baseline.csv'
     act_data = forecast_data_for_model_df(hub_config, pd.read_csv(model_output_file), 'wk inc flu hosp', ('02',))
     assert act_data == {}
+
+
+def test_forecast_data_for_model_df_invalid_target():
+    # test for the passed target not being present in any hub_config.model_tasks's viz_target_id
+    hub_dir = Path('tests/hubs/flu-metrocast')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    with pytest.raises(RuntimeError, match="not exactly one ModelTask found for target"):
+        forecast_data_for_model_df(hub_config, None, 'bad target', None)

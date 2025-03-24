@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from hub_predtimechart.hub_config_ptc import HubConfigPtc
 
 
@@ -26,18 +28,25 @@ def ptc_options_for_hub(hub_config: HubConfigPtc):
             return max(reference_dates)
 
 
-    # set `target_variables` and `initial_target_var`. recall that we currently only support one target
+    # set `target_variables` and `initial_target_var`. recall: we require exactly one `target_metadata` entry, and only
+    # one entry under its `target_keys`
     options = {}
-    options['target_variables'] = [{'value': hub_config.viz_target_id,
-                                    'text': hub_config.viz_target_name,
-                                    'plot_text': hub_config.viz_target_name}]
+    options['target_variables'] = []
+    for model_task in hub_config.model_tasks:
+        target_metadata = model_task.task['target_metadata'][0]
+        target_name = target_metadata['target_name']  # ex: "Percentage of ED visits due to influenza"
+        target_key_value = list(target_metadata['target_keys'].values())[0]  # ex: "Flu ED visits pct"
+        options['target_variables'].append({'value': target_key_value,
+                                            'text': target_name,
+                                            'plot_text': target_name})
     options['initial_target_var'] = options['target_variables'][0]['value']
 
     # set `task_ids` and `initial_task_ids`
-    options['task_ids'] = {}
-    for task_id, task_values in hub_config.viz_task_id_to_vals.items():  # ex: {'location': ["US", "01", ...], ...}
-        options['task_ids'][task_id] = [{'value': task_value, 'text': task_text(task_id, task_value)} for task_value in
-                                        task_values]
+    options['task_ids'] = defaultdict(list)
+    for model_task in hub_config.model_tasks:
+        for task_id, task_values in model_task.viz_task_id_to_vals.items():  # ex: {'location': ["US", "01", ...], ...}
+            options['task_ids'][task_id].extend([{'value': task_value, 'text': task_text(task_id, task_value)}
+                                                 for task_value in task_values])
     options['initial_task_ids'] = {task_id: task_values[0]['value'] for task_id, task_values in
                                    options['task_ids'].items()}
 
@@ -46,9 +55,9 @@ def ptc_options_for_hub(hub_config: HubConfigPtc):
     options['initial_interval'] = options['intervals'][-1]
 
     # set `available_as_ofs`, `initial_as_of`, and `current_date`
-    # available_as_ofs is the subset of hub_config.viz_reference_dates for which
-    # there is at least one model output file
-    options['available_as_ofs'] = hub_config.get_available_ref_dates()
+    options['available_as_ofs'] = {}
+    for model_task in hub_config.model_tasks:
+        options['available_as_ofs'][model_task.viz_target_id] = model_task.get_available_ref_dates()
     options['initial_as_of'] = max([get_max_ref_date_or_first_config_ref_date(reference_dates)
                                     for reference_dates in options['available_as_ofs'].values()])
     options['current_date'] = options['initial_as_of']

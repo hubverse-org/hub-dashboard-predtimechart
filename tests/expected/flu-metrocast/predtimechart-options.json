@@ -1,6 +1,7 @@
 {
   "available_as_ofs": {
-    "ILI ED visits": ["2025-02-22", "2025-03-01"]
+    "ILI ED visits": ["2025-02-22", "2025-03-01"],
+    "Flu ED visits pct": ["2025-02-22", "2025-03-01"]
   },
   "current_date": "2025-03-01",
   "initial_as_of": "2025-03-01",
@@ -18,6 +19,11 @@
       "plot_text": "ED visits due to ILI",
       "text": "ED visits due to ILI",
       "value": "ILI ED visits"
+    },
+    {
+      "plot_text": "Percentage of ED visits due to influenza",
+      "text": "Percentage of ED visits due to influenza",
+      "value": "Flu ED visits pct"
     }
   ],
   "task_ids": {
@@ -27,7 +33,12 @@
       {"text": "Brooklyn", "value": "Brooklyn"},
       {"text": "Manhattan", "value": "Manhattan"},
       {"text": "Queens", "value": "Queens"},
-      {"text": "Staten Island", "value": "Staten Island"}
+      {"text": "Staten Island", "value": "Staten Island"},
+      {"text": "Austin", "value": "Austin"},
+      {"text": "Houston", "value": "Houston"},
+      {"text": "Dallas", "value": "Dallas"},
+      {"text": "El Paso", "value": "El Paso"},
+      {"text": "San Antonio", "value": "San Antonio"}
     ]
   }
 }
