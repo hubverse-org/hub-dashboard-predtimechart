@@ -11,11 +11,6 @@ ptc_config_schema = {
             "type": "integer",
             "minimum": 0
         },
-        "model_tasks_idx": {
-            "description": "0-based index of the `model_tasks` entry under `rounds_idx` to use for visualization",
-            "type": "integer",
-            "minimum": 0
-        },
         "reference_date_col_name": {
             "description": "name of the column that represents the `reference_date`",
             "type": "string",
@@ -62,7 +57,6 @@ ptc_config_schema = {
     },
     "required": [
         "rounds_idx",
-        "model_tasks_idx",
         "reference_date_col_name",
         "target_date_col_name",
         "horizon_col_name",

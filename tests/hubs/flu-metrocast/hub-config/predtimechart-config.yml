@@ -1,6 +1,5 @@
 ---
 rounds_idx: 0
-model_tasks_idx: 0  # "ILI ED visits" (NYC)
 reference_date_col_name: 'reference_date'
 target_date_col_name: 'target_end_date'
 horizon_col_name: 'horizon'

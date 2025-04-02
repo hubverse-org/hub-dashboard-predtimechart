@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import date
 from pathlib import Path
 
 import click
@@ -50,58 +51,60 @@ def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir, regenera
     logger.info(f"main({hub_dir=}, {ptc_config_file=}, {options_file_out=}, {forecasts_out_dir=}, {regenerate=}): "
                 f"entered")
     hub_config = HubConfigPtc(Path(hub_dir), Path(ptc_config_file))
-    json_files = _generate_json_files(hub_config, Path(forecasts_out_dir), regenerate)
+    json_files = _generate_forecast_json_files(hub_config, Path(forecasts_out_dir), regenerate)
     _generate_options_file(hub_config, Path(options_file_out))
     logger.info(f"main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. "
                 f"config file generated: {options_file_out}")
 
 
 #
-# _generate_json_files() and helpers
+# _generate_forecast_json_files() and helpers
 #
 
-def _generate_json_files(hub_config: HubConfigPtc, output_dir: Path, is_regenerate: bool = False) -> list[Path]:
+def _generate_forecast_json_files(hub_config: HubConfigPtc, output_dir: Path, is_regenerate: bool = False) \
+        -> list[Path]:
     """
     Generates forecast json files from `hub_config`. Returns a list of Paths of the generated files.
 
-    :param hub_config: see callers above
-    :param output_dir: see callers above
+    :param hub_config: see caller above
+    :param output_dir: ""
     :param is_regenerate: boolean indicator for a complete rebuild of the data regardless of whether the files exist.
     """
-    # loop over every (reference_date X model_id) combination. the nested order of reference_date, model_id ensures we
-    # open each model_output file only once. the tradeoff is that all model_output files for a particular reference_date
-    # are loaded into memory, but that should be reasonable given the number of teams a hub might have and the size of
-    # their model_output files
-    available_as_ofs = hub_config.get_available_ref_dates().values()
-    newest_reference_date = max([max(date) for date in available_as_ofs])
-    df_cols_to_use = ([hub_config.viz_target_col_name] + hub_config.viz_task_ids +
-                      [hub_config.target_date_col_name, 'output_type', 'output_type_id', 'value'])
-    json_files = []  # list of files actually loaded
-    for reference_date in hub_config.viz_reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
-        # set model_id_to_df
-        model_id_to_df: dict[str, pd.DataFrame] = {}
-        for model_id in hub_config.model_id_to_metadata:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
-            model_output_file = hub_config.model_output_file_for_ref_date(model_id, reference_date)
-            if model_output_file:
-                if model_output_file.suffix == '.csv':
-                    model_id_to_df[model_id] = pd.read_csv(model_output_file, usecols=df_cols_to_use)
-                elif model_output_file.suffix in ['.parquet', '.pqt']:
-                    model_id_to_df[model_id] = pd.read_parquet(model_output_file, columns=df_cols_to_use)
-                else:
-                    raise RuntimeError(f"unsupported model output file type: {model_output_file!r}. "
-                                       f"Only .csv and .parquet are supported")
+    # for each ModelTask in hub_config, loop over every (reference_date X model_id) combination. the nested order of
+    # reference_date, model_id ensures we open each model_output file only once. the tradeoff is that all model_output
+    # files for a particular reference_date are loaded into memory, but that should be reasonable given the number of
+    # teams a hub might have and the size of their model_output files
+    json_files = []  # list of files actually generated
+    for model_task in hub_config.model_tasks:
+        available_as_ofs = model_task.get_available_ref_dates()
+        newest_reference_date = max([date.fromisoformat(date_str) for date_str in available_as_ofs]).isoformat()
+        df_cols_to_use = ([model_task.viz_target_col_name] + model_task.viz_task_ids +
+                          [hub_config.target_date_col_name, 'output_type', 'output_type_id', 'value'])
+        for reference_date in model_task.viz_reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
+            # set model_id_to_df
+            model_id_to_df: dict[str, pd.DataFrame] = {}
+            for model_id in hub_config.model_id_to_metadata:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
+                model_output_file = hub_config.model_output_file_for_ref_date(model_id, reference_date)
+                if model_output_file:
+                    if model_output_file.suffix == '.csv':
+                        model_id_to_df[model_id] = pd.read_csv(model_output_file, usecols=df_cols_to_use)
+                    elif model_output_file.suffix in ['.parquet', '.pqt']:
+                        model_id_to_df[model_id] = pd.read_parquet(model_output_file, columns=df_cols_to_use)
+                    else:
+                        raise RuntimeError(f"unsupported model output file type: {model_output_file!r}. "
+                                           f"Only .csv and .parquet are supported")
 
-        if not model_id_to_df:  # no model outputs for reference_date
-            continue
+            if not model_id_to_df:  # no model outputs for reference_date
+                continue
 
-        # iterate over each (target X task_ids) combination (for now we only support one target), outputting to the
-        # corresponding json file
-        for task_ids_tuple in hub_config.viz_task_ids_tuples:
-            json_file = generate_forecast_json_file(hub_config, model_id_to_df, output_dir, hub_config.viz_target_id,
-                                                    task_ids_tuple, reference_date, newest_reference_date,
-                                                    is_regenerate)
-            if json_file:
-                json_files.append(json_file)
+            # iterate over each (target X task_ids) combination (for now we only support one target), outputting to the
+            # corresponding json file
+            for task_ids_tuple in model_task.viz_task_ids_tuples:
+                json_file = generate_forecast_json_file(hub_config, model_id_to_df, output_dir,
+                                                        model_task.viz_target_id, task_ids_tuple, reference_date,
+                                                        newest_reference_date, is_regenerate)
+                if json_file:
+                    json_files.append(json_file)
 
     # done
     return json_files
