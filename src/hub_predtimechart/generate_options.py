@@ -39,16 +39,19 @@ def ptc_options_for_hub(hub_config: HubConfigPtc):
         options['target_variables'].append({'value': target_key_value,
                                             'text': target_name,
                                             'plot_text': target_name})
-    options['initial_target_var'] = options['target_variables'][0]['value']
+    options['initial_target_var'] = options['target_variables'][0]['value']  # arbitrary choice
 
     # set `task_ids` and `initial_task_ids`
-    options['task_ids'] = defaultdict(list)
+    options['task_ids'] = {}
     for model_task in hub_config.model_tasks:
+        options['task_ids'][model_task.viz_target_id] = defaultdict(list)
         for task_id, task_values in model_task.viz_task_id_to_vals.items():  # ex: {'location': ["US", "01", ...], ...}
-            options['task_ids'][task_id].extend([{'value': task_value, 'text': task_text(task_id, task_value)}
-                                                 for task_value in task_values])
-    options['initial_task_ids'] = {task_id: task_values[0]['value'] for task_id, task_values in
-                                   options['task_ids'].items()}
+            options['task_ids'][model_task.viz_target_id][task_id].extend(
+                [{'value': task_value, 'text': task_text(task_id, task_value)} for task_value in task_values])
+        options['task_ids'][model_task.viz_target_id] = dict(options['task_ids'][model_task.viz_target_id])  # convert
+    options['initial_task_ids'] = {task_id: task_values[0]['value']  # arbitrary choice
+                                   for task_id, task_values
+                                   in options['task_ids'][options['initial_target_var']].items()}
 
     # set `intervals` and `initial_interval`
     options['intervals'] = ["0%", "50%", "95%"]

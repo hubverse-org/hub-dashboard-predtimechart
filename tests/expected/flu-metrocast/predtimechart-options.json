@@ -27,18 +27,24 @@
     }
   ],
   "task_ids": {
-    "location": [
-      {"text": "NYC", "value": "NYC"},
-      {"text": "Bronx", "value": "Bronx"},
-      {"text": "Brooklyn", "value": "Brooklyn"},
-      {"text": "Manhattan", "value": "Manhattan"},
-      {"text": "Queens", "value": "Queens"},
-      {"text": "Staten Island", "value": "Staten Island"},
-      {"text": "Austin", "value": "Austin"},
-      {"text": "Houston", "value": "Houston"},
-      {"text": "Dallas", "value": "Dallas"},
-      {"text": "El Paso", "value": "El Paso"},
-      {"text": "San Antonio", "value": "San Antonio"}
-    ]
+    "ILI ED visits": {
+      "location": [
+        {"text": "NYC", "value": "NYC"},
+        {"text": "Bronx", "value": "Bronx"},
+        {"text": "Brooklyn", "value": "Brooklyn"},
+        {"text": "Manhattan", "value": "Manhattan"},
+        {"text": "Queens", "value": "Queens"},
+        {"text": "Staten Island", "value": "Staten Island"}
+      ]
+    },
+    "Flu ED visits pct": {
+      "location": [
+        {"text": "Austin", "value": "Austin"},
+        {"text": "Houston", "value": "Houston"},
+        {"text": "Dallas", "value": "Dallas"},
+        {"text": "El Paso", "value": "El Paso"},
+        {"text": "San Antonio", "value": "San Antonio"}
+      ]
+    }
   }
 }
