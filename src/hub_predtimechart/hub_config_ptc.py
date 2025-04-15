@@ -105,7 +105,7 @@ class HubConfigPtc(HubConfig):
         target_data_file_path = self.hub_dir / 'target-data' / self.get_target_data_file_name()
         try:
             # the override schema handles the 'US' location (the only location that doesn't parse as Int64)
-            # todo xx hard-coded column names
+            # todo hard-coded column names
             return pl.read_csv(target_data_file_path, schema_overrides={'location': pl.String,
                                                                         'value': pl.Float64,
                                                                         'observation': pl.Float64},

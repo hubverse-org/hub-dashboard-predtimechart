@@ -1,6 +1,6 @@
 import json
 import sys
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 import click
@@ -64,24 +64,24 @@ def _generate_target_json_files(hub_config: HubConfigPtc, target_data_df: pd.Dat
     :param target_out_dir: ""
     """
     json_files = []  # list of files actually generated
-    # for each model_task, generate target data file contents and then save as json.
-    # NB: regarding the reference_date we use, for now we use reference_date_from_today(), but we may want to allow
-    # this app's caller to pass reference_date as a main() arg. having this as an input option could be useful if we
-    #   want to be able to go back and build the previous target time series data files
+    # for each (model_task x reference_date x task_ids_tuple) combination, generate and save target data as a json file
     target_out_dir = Path(target_out_dir)
-    reference_date = reference_date_from_today().isoformat()  # a Saturday
     for model_task in hub_config.model_tasks:
-        for task_ids_tuple in model_task.viz_task_ids_tuples:
-            file_name = json_file_name(model_task.viz_target_id, task_ids_tuple, reference_date)
-            location_data_dict = ptc_target_data(model_task, target_data_df, task_ids_tuple, reference_date)
-            json_files.append(target_out_dir / file_name)
-            with open(target_out_dir / file_name, 'w') as fp:
-                json.dump(location_data_dict, fp, indent=4)
+        for reference_date in model_task.viz_reference_dates:
+            for task_ids_tuple in model_task.viz_task_ids_tuples:
+                file_name = json_file_name(model_task.viz_target_id, task_ids_tuple, reference_date)
+                location_data_dict = ptc_target_data(model_task, target_data_df, task_ids_tuple, reference_date)
+                if not location_data_dict:
+                    continue  # no data
+
+                json_files.append(target_out_dir / file_name)
+                with open(target_out_dir / file_name, 'w') as fp:
+                    json.dump(location_data_dict, fp, indent=4)
     return json_files
 
 
 def ptc_target_data(model_task: ModelTask, target_data_df: pl.DataFrame, task_ids_tuple: tuple[str],
-                    reference_date: str | None):
+                    reference_date: str | None) -> dict[str, list] | None:
     """
     Returns a dict for a single reference date and location in the target data format documented at https://github.com/reichlab/predtimechart?tab=readme-ov-file#fetchdata-truth-data-format.
     Note that this function currently assumes there is only one task id variable other than the reference date, horizon,
@@ -99,13 +99,15 @@ def ptc_target_data(model_task: ModelTask, target_data_df: pl.DataFrame, task_id
     :param task_ids_tuple: a tuple as returned by HubConfigPtc.fetch_task_ids_tuples
     :param reference_date: a date from `hub_config.viz_reference_dates` that's used to find the closest as_of in
         `target_data_df` if that column is present. ignored if column is not present
-    :return a dict as documented above with two keys: 'date' and 'y'
+    :return a dict as documented above with two keys: 'date' and 'y' if data was found. o/w return None
     """
     # filter to max as_of that's <= reference_date if no hub_config.target_data_file_name and as_of column present in
     # target_data_df
     if (not model_task.hub_config_ptc.target_data_file_name) and ('as_of' in target_data_df.columns):
         max_as_of = _max_as_of_le_reference_date(target_data_df, reference_date)
-        if max_as_of:
+        if max_as_of is None:
+            return None
+        else:
             target_data_df = target_data_df.filter(pl.col('as_of') == max_as_of.isoformat())
 
     # until all hubs implement our new time-series target data standard, we condition on
@@ -123,26 +125,14 @@ def ptc_target_data(model_task: ModelTask, target_data_df: pl.DataFrame, task_id
     for task_id, task_id_value in zip(model_task.viz_task_id_to_vals, task_ids_tuple):
         target_data_df = target_data_df.filter(pl.col(task_id) == task_id_value)
     target_data_df = target_data_df.sort(target_date_col_name)
-    target_data_ptc = {
+
+    if len(target_data_df) == 0:
+        return None
+
+    return {
         'date': target_data_df[target_date_col_name].to_list(),
         'y': target_data_df[observation_col_name].to_list()
     }
-
-    return target_data_ptc
-
-
-def reference_date_from_today(now: date = None) -> date:
-    # NB: this hard-codes the assumption that reference_dates are Saturdays
-    if now is None:  # per https://stackoverflow.com/questions/52511405/freeze-time-not-working-for-default-param
-        now = date.today()
-
-    # Calculate the days until the next Saturday
-    days_to_saturday = 5 - now.weekday()
-    if days_to_saturday < 0:
-        days_to_saturday += 7
-
-    # Add the calculated days to the given date
-    return now + timedelta(days=days_to_saturday)
 
 
 def _max_as_of_le_reference_date(target_data_df: pl.DataFrame, reference_date: str) -> date:
