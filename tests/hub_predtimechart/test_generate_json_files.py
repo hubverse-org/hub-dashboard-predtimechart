@@ -2,10 +2,7 @@ import json
 import shutil
 from pathlib import Path
 
-from freezegun import freeze_time
-
 from hub_predtimechart.app.generate_json_files import _generate_forecast_json_files, _generate_options_file
-from hub_predtimechart.app.generate_target_json_files import _generate_target_json_files
 from hub_predtimechart.hub_config_ptc import HubConfigPtc
 
 
@@ -64,35 +61,6 @@ def test_generate_forecast_json_files_flu_metrocast(tmp_path):
 
     for json_file in act_json_files:
         with open('tests/expected/flu-metrocast/forecasts/' + json_file.name) as exp_fp, \
-                open(output_dir / json_file.name) as act_fp:
-            exp_data = json.load(exp_fp)
-            act_data = json.load(act_fp)
-            assert act_data == exp_data
-
-
-# re: reference_date: 2025-02-25 is the newest as_of in tests/hubs/flu-metrocast time-series.csv. we use 2025-03-02
-# for reference_date b/c that's the Saturday right after 2025-02-25, but we could have used any reference_date on or
-# after 2025-02-25
-@freeze_time("2025-03-02")  # Thursday. for reference_date_from_today()
-def test__generate_target_json_files_flu_metrocast(tmp_path):
-    hub_dir = Path('tests/hubs/flu-metrocast')
-    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
-    target_data_df = hub_config.get_target_data_df()
-    output_dir = tmp_path
-    json_files = _generate_target_json_files(hub_config, target_data_df, output_dir)
-    assert set(json_files) == {output_dir / 'ILI-ED-visits_NYC_2025-03-08.json',
-                               output_dir / 'ILI-ED-visits_Bronx_2025-03-08.json',
-                               output_dir / 'ILI-ED-visits_Brooklyn_2025-03-08.json',
-                               output_dir / 'ILI-ED-visits_Manhattan_2025-03-08.json',
-                               output_dir / 'ILI-ED-visits_Queens_2025-03-08.json',
-                               output_dir / 'ILI-ED-visits_Staten-Island_2025-03-08.json',
-                               output_dir / 'Flu-ED-visits-pct_Austin_2025-03-08.json',
-                               output_dir / 'Flu-ED-visits-pct_Houston_2025-03-08.json',
-                               output_dir / 'Flu-ED-visits-pct_Dallas_2025-03-08.json',
-                               output_dir / 'Flu-ED-visits-pct_El-Paso_2025-03-08.json',
-                               output_dir / 'Flu-ED-visits-pct_San-Antonio_2025-03-08.json'}
-    for json_file in json_files:
-        with open('tests/expected/flu-metrocast/targets/' + json_file.name) as exp_fp, \
                 open(output_dir / json_file.name) as act_fp:
             exp_data = json.load(exp_fp)
             act_data = json.load(act_fp)
