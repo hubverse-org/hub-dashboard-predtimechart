@@ -21,7 +21,8 @@ logger = structlog.get_logger()
 @click.argument('hub_dir', type=click.Path(file_okay=False, exists=True))
 @click.argument('ptc_config_file', type=click.Path(file_okay=True, exists=False))
 @click.argument('target_out_dir', type=click.Path(file_okay=False, exists=True))
-def main(hub_dir, ptc_config_file, target_out_dir):
+@click.option('--regenerate', is_flag=True, default=False)
+def main(hub_dir, ptc_config_file, target_out_dir, regenerate):
     """
     Generates the target data json files used by https://github.com/reichlab/predtimechart to visualize a hub's
     forecasts. Handles missing input target data in two ways, depending on the error. 1) If the `target_data_file_name`
@@ -35,13 +36,16 @@ def main(hub_dir, ptc_config_file, target_out_dir):
     to get predtimechart output
 
     TARGET_OUT_DIR: (output) a directory Path to output the viz target data json files to
+
+    --REGENERATE: (flag) indicator for a complete rebuild of the data regardless of whether the files exist.
     \f
     :param hub_dir: (input) a directory Path of a https://hubverse.io hub to generate target data json files from
     :param ptc_config_file: (input) a file Path to a `predtimechart-config.yaml` file that specifies how to process
         `hub_dir` to get predtimechart output
     :param target_out_dir: (output) a directory Path to output the viz target data json files to
+    :param regenerate: (flag) indicator for a complete rebuild of the data regardless of whether the files exist.
     """
-    logger.info(f'main({hub_dir=}, {target_out_dir=}): entered')
+    logger.info(f'main({hub_dir=}, {target_out_dir=}, {regenerate=}): entered')
     hub_config = HubConfigPtc(Path(hub_dir), Path(ptc_config_file))
 
     try:
@@ -50,18 +54,19 @@ def main(hub_dir, ptc_config_file, target_out_dir):
         logger.error(f"target data file not found. {hub_config.get_target_data_file_name()=}, {error=}")
         sys.exit(1)
 
-    json_files = _generate_target_json_files(hub_config, target_data_df, target_out_dir)
+    json_files = _generate_target_json_files(hub_config, target_data_df, target_out_dir, regenerate)
     logger.info(f'main(): done: {len(json_files)} JSON files generated: {[str(_) for _ in json_files]}. ')
 
 
-def _generate_target_json_files(hub_config: HubConfigPtc, target_data_df: pd.DataFrame, target_out_dir: Path) \
-        -> list[Path]:
+def _generate_target_json_files(hub_config: HubConfigPtc, target_data_df: pd.DataFrame, target_out_dir: Path,
+                                is_regenerate: bool = False) -> list[Path]:
     """
     Generates target json files from `hub_config`. Returns a list of Paths of the generated files.
 
     :param hub_config: see caller above
     :param target_data_df: ""
     :param target_out_dir: ""
+    :param is_regenerate: boolean indicator for a complete rebuild of the data regardless of whether the files exist.
     """
     json_files = []  # list of files actually generated
     # for each (model_task x reference_date x task_ids_tuple) combination, generate and save target data as a json file
@@ -70,12 +75,16 @@ def _generate_target_json_files(hub_config: HubConfigPtc, target_data_df: pd.Dat
         for reference_date in model_task.viz_reference_dates:
             for task_ids_tuple in model_task.viz_task_ids_tuples:
                 file_name = json_file_name(model_task.viz_target_id, task_ids_tuple, reference_date)
+                file_p = target_out_dir / file_name
+                if not is_regenerate and file_p.exists():
+                    continue  # skip existing file
+
                 location_data_dict = ptc_target_data(model_task, target_data_df, task_ids_tuple, reference_date)
                 if not location_data_dict:
                     continue  # no data
 
-                json_files.append(target_out_dir / file_name)
-                with open(target_out_dir / file_name, 'w') as fp:
+                json_files.append(file_p)
+                with open(file_p, 'w') as fp:
                     json.dump(location_data_dict, fp, indent=4)
     return json_files
 
