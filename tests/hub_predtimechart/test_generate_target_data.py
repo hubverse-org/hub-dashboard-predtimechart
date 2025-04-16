@@ -328,3 +328,7 @@ def test__generate_target_json_files_regenerate_flu_metrocast(is_regenerate, exp
 
     act_json_files = _generate_target_json_files(hub_config, target_data_df, output_dir, is_regenerate)
     assert len(act_json_files) == exp_num_files
+
+    # test the default `is_regenerate` parameter (False): no new files should be created
+    act_json_files = _generate_target_json_files(hub_config, target_data_df, output_dir)
+    assert len(act_json_files) == 0
