@@ -73,6 +73,9 @@ def _generate_target_json_files(hub_config: HubConfigPtc, target_data_df: pd.Dat
     target_out_dir = Path(target_out_dir)
     for model_task in hub_config.model_tasks:
         for reference_date in model_task.viz_reference_dates:
+            if date.fromisoformat(reference_date) > date.today():
+                break  # reference_date is in the future. break instead of continue b/c viz_reference_dates is sorted
+
             for task_ids_tuple in model_task.viz_task_ids_tuples:
                 file_name = json_file_name(model_task.viz_target_id, task_ids_tuple, reference_date)
                 file_p = target_out_dir / file_name
@@ -113,7 +116,7 @@ def ptc_target_data(model_task: ModelTask, target_data_df: pl.DataFrame, task_id
     # filter to max as_of that's <= reference_date if no hub_config.target_data_file_name and as_of column present in
     # target_data_df
     if (not model_task.hub_config_ptc.target_data_file_name) and ('as_of' in target_data_df.columns):
-        max_as_of = _max_as_of_le_reference_date(target_data_df, reference_date)
+        max_as_of = _max_as_of_le_reference_date(target_data_df, model_task.viz_target_id, reference_date)
         if max_as_of is None:
             return None
         else:
@@ -144,16 +147,23 @@ def ptc_target_data(model_task: ModelTask, target_data_df: pl.DataFrame, task_id
     }
 
 
-def _max_as_of_le_reference_date(target_data_df: pl.DataFrame, reference_date: str) -> date:
+def _max_as_of_le_reference_date(target_data_df: pl.DataFrame, viz_target_id: str, reference_date: str) -> date:
     """
     ptc_target_data() helper
 
-    :return: max as_of that's <= reference_date if hub_config.target_data_file_name and as_of column present in
-        target_data_df. return None if not found
+    :param target_data_df: a pl.DataFrame that loaded from HubConfigPtc.target_data_file_name. assumes follows our new
+        time-series target data standard - has `as_of` column, etc.
+    :param viz_target_id: the target of interest. via ModelTask.viz_target_id
+    :param reference_date: string naming the reference_date of interest
+    :return: max as_of that's <= `reference_date` for `viz_target_id`. return None if not found
     """
-    unique_as_ofs = [date.fromisoformat(as_of) for as_of in
-                     pl.Series(target_data_df.unique('as_of').select('as_of').sort('as_of'))]  # sort for debugging
-    le_as_ofs = [as_of for as_of in unique_as_ofs if as_of <= date.fromisoformat(reference_date)]
+    reference_date = date.fromisoformat(reference_date)
+    unique_as_ofs = [date.fromisoformat(as_of) for as_of in pl.Series(target_data_df
+                                                                      .filter(pl.col('target') == viz_target_id)
+                                                                      .unique('as_of')
+                                                                      .select('as_of')
+                                                                      .sort('as_of'))]  # sort for debugging
+    le_as_ofs = [as_of for as_of in unique_as_ofs if as_of <= reference_date]
     return max(le_as_ofs) if le_as_ofs else None
 
 

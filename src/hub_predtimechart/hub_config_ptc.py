@@ -209,7 +209,7 @@ class ModelTask:
     - viz_task_id_to_vals: dict that maps task_ids (model_tasks.task_ids.keys) to a union of required and optional
         fields
     - viz_task_ids_tuples: the product of all viz task_id values
-    - viz_reference_dates: union of required and optional reference_dates from the reference column
+    - viz_reference_dates: union of required and optional reference_dates from the reference column. sorted by date
     """
     hub_config_ptc: HubConfigPtc = field(repr=False)
     task: dict = field(repr=False)
@@ -252,8 +252,8 @@ class ModelTask:
 
         # set viz_reference_dates
         ref_date_task_id = self.task['task_ids'][self.hub_config_ptc.reference_date_col_name]
-        self.viz_reference_dates = (ref_date_task_id['required'] if ref_date_task_id['required'] else []) + \
-                                   (ref_date_task_id['optional'] if ref_date_task_id['optional'] else [])
+        self.viz_reference_dates = sorted((ref_date_task_id['required'] if ref_date_task_id['required'] else []) +
+                                          (ref_date_task_id['optional'] if ref_date_task_id['optional'] else []))
 
 
     def get_available_ref_dates(self) -> list[str]:
