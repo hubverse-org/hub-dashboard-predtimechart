@@ -76,8 +76,8 @@ def _generate_forecast_json_files(hub_config: HubConfigPtc, output_dir: Path, is
     # teams a hub might have and the size of their model_output files
     json_files = []  # list of files actually generated
     for model_task in hub_config.model_tasks:
-        available_as_ofs = model_task.get_available_ref_dates()
-        newest_reference_date = max([date.fromisoformat(date_str) for date_str in available_as_ofs]).isoformat()
+        available_ref_dates = model_task.get_available_ref_dates()
+        newest_reference_date = max([date.fromisoformat(date_str) for date_str in available_ref_dates]).isoformat()
         df_cols_to_use = ([model_task.viz_target_col_name] + model_task.viz_task_ids +
                           [hub_config.target_date_col_name, 'output_type', 'output_type_id', 'value'])
         for reference_date in model_task.viz_reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
