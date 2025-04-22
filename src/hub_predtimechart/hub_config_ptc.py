@@ -7,7 +7,7 @@ from typing import Optional
 import pandas as pd
 import polars as pl
 import yaml
-from jsonschema import ValidationError, validate
+from jsonschema import ValidationError, validate, FormatChecker
 
 from hub_predtimechart.hub_config import HubConfig
 from hub_predtimechart.ptc_schema import ptc_config_schema
@@ -23,6 +23,7 @@ class HubConfigPtc(HubConfig):
     - horizon_col_name: ""
     - initial_checked_models: ""
     - disclaimer: ""
+    - initial_xaxis_range: "", or None if not passed
     - task_id_text: "". optional (None if not passed). keys: task_ids, values: value-to-text dict. ex:
         {'location': {'US': 'United States', '01': 'Alabama', ..., '78': 'Virgin Islands'},  ...}
     - target_data_file_name: either None (if the hub implements our new time-series target data standard) which means to
@@ -60,8 +61,9 @@ class HubConfigPtc(HubConfig):
         self.horizon_col_name: str = ptc_config['horizon_col_name']
         self.initial_checked_models: str = ptc_config['initial_checked_models']
         self.disclaimer: str | None = ptc_config.get('disclaimer')  # optional
-        self.task_id_text: dict | None = ptc_config.get('task_id_text')  # optional
-        self.target_data_file_name: str | None = ptc_config.get('target_data_file_name')  # optional
+        self.initial_xaxis_range: str | None = ptc_config.get('initial_xaxis_range')  # ""
+        self.task_id_text: dict | None = ptc_config.get('task_id_text')  # ""
+        self.target_data_file_name: str | None = ptc_config.get('target_data_file_name')  # ""
 
         # set model_id_to_metadata
         self.model_id_to_metadata: dict[str, dict] = {}
@@ -129,8 +131,9 @@ def _validate_predtimechart_config(ptc_config: dict, tasks: dict):
     :param tasks: dict loaded from a 'tasks.json' file
     :raises ValidationError: if `ptc_config` is not valid
     """
-    # validate against the JSON Schema and then do additional validations
-    validate(ptc_config, ptc_config_schema)
+    # validate against the JSON Schema and then do additional validations. enable format checking for
+    # `initial_xaxis_range` `date` format
+    validate(ptc_config, ptc_config_schema, format_checker=FormatChecker())
 
     # validate: `rounds_idx`
     try:
@@ -167,7 +170,8 @@ def _validate_hub_ptc_compatibility(hub_config_ptc: HubConfigPtc):
         raise ValidationError(f"'designated_model' not found in model metadata schema's 'required' section")
 
     # validate: all model_task entries have the same task_ids. frozenset lets us make a set of sets
-    task_ids_all_model_tasks = [frozenset(model_task.task['task_ids'].keys()) for model_task in hub_config_ptc.model_tasks]
+    task_ids_all_model_tasks = [frozenset(model_task.task['task_ids'].keys()) for model_task in
+                                hub_config_ptc.model_tasks]
     if len(set(task_ids_all_model_tasks)) != 1:
         raise ValidationError(f"not all model_task entries have the same task_ids")
 
