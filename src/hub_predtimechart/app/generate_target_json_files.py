@@ -68,12 +68,23 @@ def _generate_target_json_files(hub_config: HubConfigPtc, target_data_df: pd.Dat
     :param target_out_dir: ""
     :param is_regenerate: boolean indicator for a complete rebuild of the data regardless of whether the files exist.
     """
+    def get_max_ref_date_or_first_config_ref_date(reference_dates):
+        if len(reference_dates) == 0:
+            return min(hub_config.viz_reference_dates)
+        else:
+            return max(reference_dates)
+
     json_files = []  # list of files actually generated
     # for each (model_task x reference_date x task_ids_tuple) combination, generate and save target data as a json file
+    available_as_ofs = {}
+    for model_task in hub_config.model_tasks:
+        available_as_ofs[model_task.viz_target_id] = model_task.get_available_ref_dates()
+    max_date = max([get_max_ref_date_or_first_config_ref_date(reference_dates)
+                                    for reference_dates in available_as_ofs.values()])
     target_out_dir = Path(target_out_dir)
     for model_task in hub_config.model_tasks:
         for reference_date in model_task.viz_reference_dates:
-            if date.fromisoformat(reference_date) > date.today():
+            if date.fromisoformat(reference_date) > date.fromisoformat(max_date):
                 break  # reference_date is in the future. break instead of continue b/c viz_reference_dates is sorted
 
             for task_ids_tuple in model_task.viz_task_ids_tuples:
