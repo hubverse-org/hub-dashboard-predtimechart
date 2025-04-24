@@ -121,43 +121,54 @@ def test__generate_target_json_files_flu_metrocast(tmp_path):
     target_data_df = hub_config.get_target_data_df()
     output_dir = tmp_path
 
-    # note that since we are freezing today at 2025-02-25, we should see no files after the latest reference_date before
-    # then - 2025-02-22. the max as_of <= that reference_date is 2025-02-18, which contains both NY and TX target data
+    # The generated target files should be generated up until the latest target end date,
+    # which is 2025-03-01 for these data.
     act_json_files = _generate_target_json_files(hub_config, target_data_df, output_dir)
     assert set(act_json_files) == {output_dir / 'Flu-ED-visits-pct_Austin_2025-02-15.json',
                                    output_dir / 'Flu-ED-visits-pct_Austin_2025-02-22.json',
+                                   output_dir / 'Flu-ED-visits-pct_Austin_2025-03-01.json',
                                    output_dir / 'Flu-ED-visits-pct_Dallas_2025-02-15.json',
                                    output_dir / 'Flu-ED-visits-pct_Dallas_2025-02-22.json',
+                                   output_dir / 'Flu-ED-visits-pct_Dallas_2025-03-01.json',
                                    output_dir / 'Flu-ED-visits-pct_El-Paso_2025-02-15.json',
                                    output_dir / 'Flu-ED-visits-pct_El-Paso_2025-02-22.json',
+                                   output_dir / 'Flu-ED-visits-pct_El-Paso_2025-03-01.json',
                                    output_dir / 'Flu-ED-visits-pct_Houston_2025-02-15.json',
                                    output_dir / 'Flu-ED-visits-pct_Houston_2025-02-22.json',
+                                   output_dir / 'Flu-ED-visits-pct_Houston_2025-03-01.json',
                                    output_dir / 'Flu-ED-visits-pct_San-Antonio_2025-02-15.json',
                                    output_dir / 'Flu-ED-visits-pct_San-Antonio_2025-02-22.json',
+                                   output_dir / 'Flu-ED-visits-pct_San-Antonio_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_Bronx_2025-02-01.json',
                                    output_dir / 'ILI-ED-visits_Bronx_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_Bronx_2025-02-15.json',
                                    output_dir / 'ILI-ED-visits_Bronx_2025-02-22.json',
+                                   output_dir / 'ILI-ED-visits_Bronx_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_Brooklyn_2025-02-01.json',
                                    output_dir / 'ILI-ED-visits_Brooklyn_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_Brooklyn_2025-02-15.json',
                                    output_dir / 'ILI-ED-visits_Brooklyn_2025-02-22.json',
+                                   output_dir / 'ILI-ED-visits_Brooklyn_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_Manhattan_2025-02-01.json',
                                    output_dir / 'ILI-ED-visits_Manhattan_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_Manhattan_2025-02-15.json',
                                    output_dir / 'ILI-ED-visits_Manhattan_2025-02-22.json',
+                                   output_dir / 'ILI-ED-visits_Manhattan_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_NYC_2025-02-01.json',
                                    output_dir / 'ILI-ED-visits_NYC_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_NYC_2025-02-15.json',
                                    output_dir / 'ILI-ED-visits_NYC_2025-02-22.json',
+                                   output_dir / 'ILI-ED-visits_NYC_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_Queens_2025-02-01.json',
                                    output_dir / 'ILI-ED-visits_Queens_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_Queens_2025-02-15.json',
                                    output_dir / 'ILI-ED-visits_Queens_2025-02-22.json',
+                                   output_dir / 'ILI-ED-visits_Queens_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_Staten-Island_2025-02-01.json',
                                    output_dir / 'ILI-ED-visits_Staten-Island_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_Staten-Island_2025-02-15.json',
-                                   output_dir / 'ILI-ED-visits_Staten-Island_2025-02-22.json'}
+                                   output_dir / 'ILI-ED-visits_Staten-Island_2025-02-22.json',
+                                   output_dir / 'ILI-ED-visits_Staten-Island_2025-03-01.json'}
 
     for act_json_file in act_json_files:  # spot check contents of a few
         with open('tests/expected/flu-metrocast/targets/' + act_json_file.name) as exp_fp, \
