@@ -95,14 +95,16 @@ def test__max_as_of_le_reference_date_flu_metrocast():
     hub_dir = Path('tests/hubs/flu-metrocast')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     target_data_df = hub_config.get_target_data_df()
-    # as_ofs in target data: ['2025-02-03', '2025-02-11', '2025-02-12', '2025-02-18', '2025-02-25']
+    # as_ofs in target data: ['2025-01-30', '2025-02-03', '2025-02-11', '2025-02-12', '2025-02-18', '2025-02-25']
     viz_target_id_to_ref_date_exp_max_as_of = {
         'ILI ED visits': [('2025-01-29', None),
+                          ('2025-01-30', '2025-01-30'),
                           ('2025-02-04', '2025-02-03'),
                           ('2025-02-11', '2025-02-11'),
                           ('2025-02-12', '2025-02-11'),  # 2025-02-12 only has other target
                           ('2025-02-26', '2025-02-25')],
         'Flu ED visits pct': [('2025-01-29', None),
+                              ('2025-01-30', None),
                               ('2025-02-04', None),
                               ('2025-02-11', None),
                               ('2025-02-12', '2025-02-12'),
