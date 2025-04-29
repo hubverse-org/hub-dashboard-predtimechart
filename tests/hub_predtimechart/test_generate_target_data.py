@@ -98,7 +98,7 @@ def test__max_as_of_le_reference_date_flu_metrocast():
     # as_ofs in target data: ['2025-01-30', '2025-02-03', '2025-02-11', '2025-02-12', '2025-02-18', '2025-02-25']
     viz_target_id_to_ref_date_exp_max_as_of = {
         'ILI ED visits': [('2025-01-29', None),
-                          ('2025-01-30', '2025-01-30'),
+                          ('2025-01-30', None),
                           ('2025-02-04', '2025-02-03'),
                           ('2025-02-11', '2025-02-11'),
                           ('2025-02-12', '2025-02-11'),  # 2025-02-12 only has other target
