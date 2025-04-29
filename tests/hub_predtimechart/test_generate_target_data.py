@@ -19,7 +19,7 @@ def test_ptc_target_data_flusight_forecast_hub():
         task_ids_tuple = (loc,)
         with open(f'tests/expected/FluSight-forecast-hub/target/wk-inc-flu-hosp_{loc}.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, None)
+            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, None, None)
             assert act_data == exp_data
 
 
@@ -31,7 +31,7 @@ def test_ptc_target_data_covid19_forecast_hub():
         task_ids_tuple = (loc,)
         with open(f'tests/expected/covid19-forecast-hub/target/wk-inc-covid-hosp_{loc}.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, None)
+            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, None, None)
             assert act_data == exp_data
 
 
@@ -46,7 +46,7 @@ def test__generate_target_json_files_flusight_forecast_hub(tmp_path):
     # format, we assume that this is essentially an as_of date that is the same
     # as the newest model output date (2025-05-04 in this case).
     # target data files are target x location x reference_date.
-    # In this case, there is one target and one reference_date. 
+    # In this case, there is one target and one reference_date.
     assert len(act_json_files) == 53
 
 
@@ -62,14 +62,14 @@ def test_ptc_target_data_flu_metrocast():
         task_ids_tuple = (loc,)
         with open(f'tests/expected/flu-metrocast/targets/ILI-ED-visits_{loc}_2025-03-01.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, reference_date)
+            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, reference_date, None)
             assert act_data == exp_data
 
     for loc in ['Austin', 'Dallas']:
         task_ids_tuple = (loc,)
         with open(f'tests/expected/flu-metrocast/targets/Flu-ED-visits-pct_{loc}_2025-03-01.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config.model_tasks[1], target_data_df, task_ids_tuple, reference_date)
+            act_data = ptc_target_data(hub_config.model_tasks[1], target_data_df, task_ids_tuple, reference_date, None)
             assert act_data == exp_data
 
 
@@ -79,11 +79,11 @@ def test_ptc_target_data_flu_metrocast_no_data():
     target_data_df = hub_config.get_target_data_df()
 
     # case: no max as_of <= reference_date. here there are no as_ofs <= '2025-01-29' (the first is '2025-03-01')
-    assert ptc_target_data(hub_config.model_tasks[1], target_data_df, ('Austin',), '2025-01-29') is None
+    assert ptc_target_data(hub_config.model_tasks[1], target_data_df, ('Austin',), '2025-01-29', None) is None
 
     # case: similar, but asking for a reference_date that has no as_ofs containing data for that target (the first TX
     # data starts '2025-02-12')
-    assert ptc_target_data(hub_config.model_tasks[1], target_data_df, ('Austin',), '2025-02-11') is None
+    assert ptc_target_data(hub_config.model_tasks[1], target_data_df, ('Austin',), '2025-02-11', None) is None
 
 
 def test_get_target_data_df_error_cases():
