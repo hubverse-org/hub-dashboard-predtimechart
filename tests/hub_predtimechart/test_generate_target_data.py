@@ -35,6 +35,21 @@ def test_ptc_target_data_covid19_forecast_hub():
             assert act_data == exp_data
 
 
+def test__generate_target_json_files_flusight_forecast_hub(tmp_path):
+    hub_dir = Path('tests/hubs/FluSight-forecast-hub')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    target_data_df = hub_config.get_target_data_df()
+    output_dir = tmp_path
+
+    act_json_files = _generate_target_json_files(hub_config, target_data_df, output_dir)
+    # There are 53 locations. Because the target data are not in the new hubverse
+    # format, we assume that this is essentially an as_of date that is the same
+    # as the newest model output date (2025-05-04 in this case).
+    # target data files are target x location x reference_date.
+    # In this case, there is one target and one reference_date. 
+    assert len(act_json_files) == 53
+
+
 def test_ptc_target_data_flu_metrocast():
     hub_dir = Path('tests/hubs/flu-metrocast')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
