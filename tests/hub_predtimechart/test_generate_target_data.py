@@ -174,7 +174,7 @@ def test__generate_target_json_files_flu_metrocast(tmp_path):
 
 
 @freeze_time("2025-02-25")
-@pytest.mark.parametrize("is_regenerate,exp_num_files", [(True, 34), (False, 1)])
+@pytest.mark.parametrize("is_regenerate,exp_num_files", [(True, 39), (False, 1)])
 def test__generate_target_json_files_regenerate_flu_metrocast(is_regenerate, exp_num_files, tmp_path):
     """
     Tests `_generate_target_json_files()`'s `is_regenerate` arg by checking that, if set, it skips the existing files
@@ -186,7 +186,7 @@ def test__generate_target_json_files_regenerate_flu_metrocast(is_regenerate, exp
     target_data_df = hub_config.get_target_data_df()
     output_dir = tmp_path
 
-    # copy the 38 files to the output directory, of which 34 (as listed above in
+    # copy the 39 files to the output directory, of which all (as listed above in
     # `test__generate_target_json_files_flu_metrocast()`) will be generated if `is_regenerate`. but first we delete one
     # so that we have a missing file for `is_regenerate` being False
     shutil.copytree('tests/expected/flu-metrocast/targets/', output_dir, dirs_exist_ok=True)
