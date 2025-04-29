@@ -5,7 +5,6 @@ from pathlib import Path
 
 import polars as pl
 import pytest
-from freezegun import freeze_time
 
 from hub_predtimechart.app.generate_target_json_files import ptc_target_data, _generate_target_json_files, \
     _max_as_of_le_reference_date
@@ -116,7 +115,6 @@ def test__max_as_of_le_reference_date_flu_metrocast():
             assert act_max_as_of == exp_max_as_of
 
 
-@freeze_time("2025-02-25")
 def test__generate_target_json_files_flu_metrocast(tmp_path):
     hub_dir = Path('tests/hubs/flu-metrocast')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
@@ -173,7 +171,6 @@ def test__generate_target_json_files_flu_metrocast(tmp_path):
             assert act_data == exp_data
 
 
-@freeze_time("2025-02-25")
 @pytest.mark.parametrize("is_regenerate,exp_num_files", [(True, 39), (False, 1)])
 def test__generate_target_json_files_regenerate_flu_metrocast(is_regenerate, exp_num_files, tmp_path):
     """
