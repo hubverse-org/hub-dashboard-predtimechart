@@ -79,12 +79,12 @@ def _generate_target_json_files(hub_config: HubConfigPtc, target_data_df: pd.Dat
     available_as_ofs = {}
     for model_task in hub_config.model_tasks:
         available_as_ofs[model_task.viz_target_id] = model_task.get_available_ref_dates()
-    max_date = max([get_max_ref_date_or_first_config_ref_date(reference_dates)
+    max_available_ref_date = max([get_max_ref_date_or_first_config_ref_date(reference_dates)
                                     for reference_dates in available_as_ofs.values()])
     target_out_dir = Path(target_out_dir)
     for model_task in hub_config.model_tasks:
         for reference_date in model_task.viz_reference_dates:
-            if date.fromisoformat(reference_date) > date.fromisoformat(max_date):
+            if date.fromisoformat(reference_date) > date.fromisoformat(max_available_ref_date):
                 break  # reference_date is in the future. break instead of continue b/c viz_reference_dates is sorted
 
             for task_ids_tuple in model_task.viz_task_ids_tuples:
@@ -93,7 +93,7 @@ def _generate_target_json_files(hub_config: HubConfigPtc, target_data_df: pd.Dat
                 if not is_regenerate and file_p.exists():
                     continue  # skip existing file
 
-                location_data_dict = ptc_target_data(model_task, target_data_df, task_ids_tuple, reference_date)
+                location_data_dict = ptc_target_data(model_task, target_data_df, task_ids_tuple, reference_date, max_available_ref_date)
                 if not location_data_dict:
                     continue  # no data
 
@@ -104,7 +104,7 @@ def _generate_target_json_files(hub_config: HubConfigPtc, target_data_df: pd.Dat
 
 
 def ptc_target_data(model_task: ModelTask, target_data_df: pl.DataFrame, task_ids_tuple: tuple[str],
-                    reference_date: str | None) -> dict[str, list] | None:
+                    reference_date: str | None, max_available_ref_date: str | None) -> dict[str, list] | None:
     """
     Returns a dict for a single reference date and location in the target data format documented at https://github.com/reichlab/predtimechart?tab=readme-ov-file#fetchdata-truth-data-format.
     Note that this function currently assumes there is only one task id variable other than the reference date, horizon,
@@ -132,6 +132,12 @@ def ptc_target_data(model_task: ModelTask, target_data_df: pl.DataFrame, task_id
             return None
         else:
             target_data_df = target_data_df.filter(pl.col('as_of') == max_as_of.isoformat())
+    else:
+      # the file is one that is assumed to be updated weekly and so we can
+      # assume that the effective as_of date for this file is the same as
+      # max_available_ref_date (the newest date)
+      if max_available_ref_date is not None and reference_date != max_available_ref_date:
+          return None
 
     # until all hubs implement our new time-series target data standard, we condition on
     # hub_config.target_data_file_name, which acts as a flag indicating whether the hub implements the new standard or

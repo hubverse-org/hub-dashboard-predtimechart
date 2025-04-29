@@ -69,10 +69,10 @@
   "intervals": ["0%", "50%", "95%"],
   "initial_interval": "95%",
   "available_as_ofs": {
-    "wk inc flu hosp": ["2023-10-07"]
+    "wk inc flu hosp": ["2024-04-20", "2024-04-27", "2024-05-04"]
   },
-  "initial_as_of": "2023-10-07",
-  "current_date": "2023-10-07",
+  "initial_as_of": "2024-05-04",
+  "current_date": "2024-05-04",
   "models": [
     "CADPH-FluCAT_Ensemble", "CEPH-Rtrend_fluH", "CMU-TimeSeries", "CU-ensemble", "FluSight-baseline", "FluSight-ensemble", "GT-FluFNP", "ISU_NiemiLab-NLH", "JHU_CSSE-CSSE_Ensemble", "LUcompUncertLab-chimera", "LosAlamos_NAU-CModel_Flu", "MIGHTE-Nsemble", "MOBS-GLEAM_FLUH", "NIH-Flu_ARIMA", "NU_UCSD-GLEAM_AI_FLUH", "PSI-PROF", "SGroup-RandomForest", "SigSci-CREG", "SigSci-TSENS", "Stevens-GBR", "UGA_flucast-Copycat", "UGA_flucast-INFLAenza", "UGuelph-CompositeCurve", "UGuelphensemble-GRYPHON", "UM-DeepOutbreak", "UMass-flusion", "UMass-trends_ensemble", "UNC_IDD-InfluPaint", "UVAFluX-Ensemble", "VTSanghani-Ensemble", "cfa-flumech", "cfarenewal-cfaepimlight", "fjordhest-ensemble"
   ],
