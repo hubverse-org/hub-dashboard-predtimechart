@@ -7,7 +7,7 @@ class HubConfig:
     Provides convenient access to various parts of a hub's `tasks.json` file.
 
     Instance variables:
-    - hub_dir: Path to a hub's root directory. see: https://hubverse.io/en/latest/user-guide/hub-structure.html
+    - hub_dir: Path to a hub's root directory. see: https://docs.hubverse.io/en/latest/user-guide/hub-structure.html
     - tasks: the hub's `tasks.json` contents
     - model_metadata_schema: the hub's `model-metadata-schema.json` contents
     """
@@ -15,7 +15,7 @@ class HubConfig:
 
     def __init__(self, hub_dir: Path):
         """
-        :param hub_dir: Path to a hub's root directory. see: https://hubverse.io/en/latest/user-guide/hub-structure.html
+        :param hub_dir: Path to a hub's root directory. see: https://docs.hubverse.io/en/latest/user-guide/hub-structure.html
         """
 
         self.hub_dir = hub_dir
