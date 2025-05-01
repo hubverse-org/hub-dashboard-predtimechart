@@ -30,7 +30,7 @@ def main(hub_dir, ptc_config_file, target_out_dir, regenerate):
     the file it points to does not exist, then the program will exit with an error message, but won't actually raise a
     Python exception.
 
-    HUB_DIR: (input) a directory Path of a https://hubverse.io hub to generate target data json files from
+    HUB_DIR: (input) a directory Path of a https://docs.hubverse.io hub to generate target data json files from
 
     PTC_CONFIG_FILE: (input) a file Path to a `predtimechart-config.yaml` file that specifies how to process `hub_dir`
     to get predtimechart output
@@ -39,7 +39,7 @@ def main(hub_dir, ptc_config_file, target_out_dir, regenerate):
 
     --REGENERATE: (flag) indicator for a complete rebuild of the data regardless of whether the files exist.
     \f
-    :param hub_dir: (input) a directory Path of a https://hubverse.io hub to generate target data json files from
+    :param hub_dir: (input) a directory Path of a https://docs.hubverse.io hub to generate target data json files from
     :param ptc_config_file: (input) a file Path to a `predtimechart-config.yaml` file that specifies how to process
         `hub_dir` to get predtimechart output
     :param target_out_dir: (output) a directory Path to output the viz target data json files to
