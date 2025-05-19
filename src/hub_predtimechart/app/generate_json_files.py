@@ -28,7 +28,7 @@ def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir, regenera
     Generates the options json file and forecast json files used by https://github.com/reichlab/predtimechart to
     visualize a hub's forecasts.
 
-    HUB_DIR: (input) a directory Path of a https://hubverse.io hub to generate forecast json files from
+    HUB_DIR: (input) a directory Path of a https://docs.hubverse.io hub to generate forecast json files from
 
     PTC_CONFIG_FILE: (input) a file Path to a `predtimechart-config.yaml` file that specifies how to process `hub_dir`
     to get predtimechart output
@@ -40,7 +40,7 @@ def main(hub_dir, ptc_config_file, options_file_out, forecasts_out_dir, regenera
 
     --REGENERATE: (flag) indicator for a complete rebuild of the data regardless of whether the files exist.
     \f
-    :param hub_dir: (input) a directory Path of a https://hubverse.io hub to generate forecast json files from
+    :param hub_dir: (input) a directory Path of a https://docs.hubverse.io hub to generate forecast json files from
     :param ptc_config_file: (input) a file Path to a `predtimechart-config.yaml` file that specifies how to process
         `hub_dir` to get predtimechart output
     :param options_file_out: (output) a file Path to output the predtimechart options object file to (see

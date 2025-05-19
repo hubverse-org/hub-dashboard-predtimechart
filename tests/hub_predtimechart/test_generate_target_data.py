@@ -5,7 +5,6 @@ from pathlib import Path
 
 import polars as pl
 import pytest
-from freezegun import freeze_time
 
 from hub_predtimechart.app.generate_target_json_files import ptc_target_data, _generate_target_json_files, \
     _max_as_of_le_reference_date
@@ -20,7 +19,7 @@ def test_ptc_target_data_flusight_forecast_hub():
         task_ids_tuple = (loc,)
         with open(f'tests/expected/FluSight-forecast-hub/target/wk-inc-flu-hosp_{loc}.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, None)
+            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, None, None)
             assert act_data == exp_data
 
 
@@ -32,8 +31,23 @@ def test_ptc_target_data_covid19_forecast_hub():
         task_ids_tuple = (loc,)
         with open(f'tests/expected/covid19-forecast-hub/target/wk-inc-covid-hosp_{loc}.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, None)
+            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, None, None)
             assert act_data == exp_data
+
+
+def test__generate_target_json_files_flusight_forecast_hub(tmp_path):
+    hub_dir = Path('tests/hubs/FluSight-forecast-hub')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    target_data_df = hub_config.get_target_data_df()
+    output_dir = tmp_path
+
+    act_json_files = _generate_target_json_files(hub_config, target_data_df, output_dir)
+    # There are 53 locations. Because the target data are not in the new hubverse
+    # format, we assume that this is essentially an as_of date that is the same
+    # as the newest model output date (2025-05-04 in this case).
+    # target data files are target x location x reference_date.
+    # In this case, there is one target and one reference_date.
+    assert len(act_json_files) == 53
 
 
 def test_ptc_target_data_flu_metrocast():
@@ -48,14 +62,14 @@ def test_ptc_target_data_flu_metrocast():
         task_ids_tuple = (loc,)
         with open(f'tests/expected/flu-metrocast/targets/ILI-ED-visits_{loc}_2025-03-01.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, reference_date)
+            act_data = ptc_target_data(hub_config.model_tasks[0], target_data_df, task_ids_tuple, reference_date, None)
             assert act_data == exp_data
 
     for loc in ['Austin', 'Dallas']:
         task_ids_tuple = (loc,)
         with open(f'tests/expected/flu-metrocast/targets/Flu-ED-visits-pct_{loc}_2025-03-01.json') as fp:
             exp_data = json.load(fp)
-            act_data = ptc_target_data(hub_config.model_tasks[1], target_data_df, task_ids_tuple, reference_date)
+            act_data = ptc_target_data(hub_config.model_tasks[1], target_data_df, task_ids_tuple, reference_date, None)
             assert act_data == exp_data
 
 
@@ -65,11 +79,11 @@ def test_ptc_target_data_flu_metrocast_no_data():
     target_data_df = hub_config.get_target_data_df()
 
     # case: no max as_of <= reference_date. here there are no as_ofs <= '2025-01-29' (the first is '2025-03-01')
-    assert ptc_target_data(hub_config.model_tasks[1], target_data_df, ('Austin',), '2025-01-29') is None
+    assert ptc_target_data(hub_config.model_tasks[1], target_data_df, ('Austin',), '2025-01-29', None) is None
 
     # case: similar, but asking for a reference_date that has no as_ofs containing data for that target (the first TX
     # data starts '2025-02-12')
-    assert ptc_target_data(hub_config.model_tasks[1], target_data_df, ('Austin',), '2025-02-11') is None
+    assert ptc_target_data(hub_config.model_tasks[1], target_data_df, ('Austin',), '2025-02-11', None) is None
 
 
 def test_get_target_data_df_error_cases():
@@ -98,7 +112,7 @@ def test__max_as_of_le_reference_date_flu_metrocast():
     # as_ofs in target data: ['2025-01-30', '2025-02-03', '2025-02-11', '2025-02-12', '2025-02-18', '2025-02-25']
     viz_target_id_to_ref_date_exp_max_as_of = {
         'ILI ED visits': [('2025-01-29', None),
-                          ('2025-01-30', '2025-01-30'),
+                          ('2025-01-30', None),
                           ('2025-02-04', '2025-02-03'),
                           ('2025-02-11', '2025-02-11'),
                           ('2025-02-12', '2025-02-11'),  # 2025-02-12 only has other target
@@ -116,51 +130,54 @@ def test__max_as_of_le_reference_date_flu_metrocast():
             assert act_max_as_of == exp_max_as_of
 
 
-@freeze_time("2025-02-25")
 def test__generate_target_json_files_flu_metrocast(tmp_path):
     hub_dir = Path('tests/hubs/flu-metrocast')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     target_data_df = hub_config.get_target_data_df()
     output_dir = tmp_path
 
-    # note that since we are freezing today at 2025-02-25, we should see no files after the latest reference_date before
-    # then - 2025-02-22. the max as_of <= that reference_date is 2025-02-18, which contains both NY and TX target data
+    # The generated target files should be generated up until the latest target end date,
+    # which is 2025-03-01 for these data.
     act_json_files = _generate_target_json_files(hub_config, target_data_df, output_dir)
     assert set(act_json_files) == {output_dir / 'Flu-ED-visits-pct_Austin_2025-02-15.json',
                                    output_dir / 'Flu-ED-visits-pct_Austin_2025-02-22.json',
+                                   output_dir / 'Flu-ED-visits-pct_Austin_2025-03-01.json',
                                    output_dir / 'Flu-ED-visits-pct_Dallas_2025-02-15.json',
                                    output_dir / 'Flu-ED-visits-pct_Dallas_2025-02-22.json',
+                                   output_dir / 'Flu-ED-visits-pct_Dallas_2025-03-01.json',
                                    output_dir / 'Flu-ED-visits-pct_El-Paso_2025-02-15.json',
                                    output_dir / 'Flu-ED-visits-pct_El-Paso_2025-02-22.json',
+                                   output_dir / 'Flu-ED-visits-pct_El-Paso_2025-03-01.json',
                                    output_dir / 'Flu-ED-visits-pct_Houston_2025-02-15.json',
                                    output_dir / 'Flu-ED-visits-pct_Houston_2025-02-22.json',
+                                   output_dir / 'Flu-ED-visits-pct_Houston_2025-03-01.json',
                                    output_dir / 'Flu-ED-visits-pct_San-Antonio_2025-02-15.json',
                                    output_dir / 'Flu-ED-visits-pct_San-Antonio_2025-02-22.json',
-                                   output_dir / 'ILI-ED-visits_Bronx_2025-02-01.json',
+                                   output_dir / 'Flu-ED-visits-pct_San-Antonio_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_Bronx_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_Bronx_2025-02-15.json',
                                    output_dir / 'ILI-ED-visits_Bronx_2025-02-22.json',
-                                   output_dir / 'ILI-ED-visits_Brooklyn_2025-02-01.json',
+                                   output_dir / 'ILI-ED-visits_Bronx_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_Brooklyn_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_Brooklyn_2025-02-15.json',
                                    output_dir / 'ILI-ED-visits_Brooklyn_2025-02-22.json',
-                                   output_dir / 'ILI-ED-visits_Manhattan_2025-02-01.json',
+                                   output_dir / 'ILI-ED-visits_Brooklyn_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_Manhattan_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_Manhattan_2025-02-15.json',
                                    output_dir / 'ILI-ED-visits_Manhattan_2025-02-22.json',
-                                   output_dir / 'ILI-ED-visits_NYC_2025-02-01.json',
+                                   output_dir / 'ILI-ED-visits_Manhattan_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_NYC_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_NYC_2025-02-15.json',
                                    output_dir / 'ILI-ED-visits_NYC_2025-02-22.json',
-                                   output_dir / 'ILI-ED-visits_Queens_2025-02-01.json',
+                                   output_dir / 'ILI-ED-visits_NYC_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_Queens_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_Queens_2025-02-15.json',
                                    output_dir / 'ILI-ED-visits_Queens_2025-02-22.json',
-                                   output_dir / 'ILI-ED-visits_Staten-Island_2025-02-01.json',
+                                   output_dir / 'ILI-ED-visits_Queens_2025-03-01.json',
                                    output_dir / 'ILI-ED-visits_Staten-Island_2025-02-08.json',
                                    output_dir / 'ILI-ED-visits_Staten-Island_2025-02-15.json',
-                                   output_dir / 'ILI-ED-visits_Staten-Island_2025-02-22.json'}
-
+                                   output_dir / 'ILI-ED-visits_Staten-Island_2025-02-22.json',
+                                   output_dir / 'ILI-ED-visits_Staten-Island_2025-03-01.json'}
     for act_json_file in act_json_files:  # spot check contents of a few
         with open('tests/expected/flu-metrocast/targets/' + act_json_file.name) as exp_fp, \
                 open(output_dir / act_json_file.name) as act_fp:
@@ -169,8 +186,7 @@ def test__generate_target_json_files_flu_metrocast(tmp_path):
             assert act_data == exp_data
 
 
-@freeze_time("2025-02-25")
-@pytest.mark.parametrize("is_regenerate,exp_num_files", [(True, 34), (False, 1)])
+@pytest.mark.parametrize("is_regenerate,exp_num_files", [(True, 39), (False, 1)])
 def test__generate_target_json_files_regenerate_flu_metrocast(is_regenerate, exp_num_files, tmp_path):
     """
     Tests `_generate_target_json_files()`'s `is_regenerate` arg by checking that, if set, it skips the existing files
@@ -182,7 +198,7 @@ def test__generate_target_json_files_regenerate_flu_metrocast(is_regenerate, exp
     target_data_df = hub_config.get_target_data_df()
     output_dir = tmp_path
 
-    # copy the 38 files to the output directory, of which 34 (as listed above in
+    # copy the 39 files to the output directory, of which all (as listed above in
     # `test__generate_target_json_files_flu_metrocast()`) will be generated if `is_regenerate`. but first we delete one
     # so that we have a missing file for `is_regenerate` being False
     shutil.copytree('tests/expected/flu-metrocast/targets/', output_dir, dirs_exist_ok=True)
