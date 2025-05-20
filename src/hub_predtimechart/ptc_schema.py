@@ -40,8 +40,7 @@ ptc_config_schema = {
             "minLength": 1
         },
         "initial_xaxis_range": {
-            "description": "`array` of two dates in 'YYYY-MM-DD' format that specify the initial xaxis range to use. "
-                           "To not initialize the range, pass `null` for its value",
+            "description": "`array` of two dates in 'YYYY-MM-DD' format that specify the initial xaxis range to use. To not initialize the range, pass `null` for its value",
             "type": ["array", "null"],
             "minItems": 2,
             "maxItems": 2,
@@ -49,8 +48,7 @@ ptc_config_schema = {
             "items": {"type": "string", "format": "date"}
         },
         "task_id_text": {
-            "description": "optional mapping of predtimechart task id values to text. keys are task_ids and values "
-                           "are an object whose keys are ptc task_id `value`s and values are ptc task_id `text`s",
+            "description": "optional mapping of predtimechart task id values to text. keys are task_ids and values are an object whose keys are ptc task_id `value`s and values are ptc task_id `text`s",
             "type": "object",
             "additionalProperties": {
                 "type": "object",
