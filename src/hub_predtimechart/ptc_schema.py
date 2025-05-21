@@ -35,9 +35,17 @@ ptc_config_schema = {
             }
         },
         "disclaimer": {
-            "description": "text providing any important information users should know",
+            "description": "optional text providing any important information users should know",
             "type": "string",
             "minLength": 1
+        },
+        "initial_xaxis_range": {
+            "description": "`array` of two dates in 'YYYY-MM-DD' format that specify the initial xaxis range to use. To not initialize the range, pass `null` for its value",
+            "type": ["array", "null"],
+            "minItems": 2,
+            "maxItems": 2,
+            "uniqueItems": True,
+            "items": {"type": "string", "format": "date"}
         },
         "task_id_text": {
             "description": "optional mapping of predtimechart task id values to text. keys are task_ids and values are an object whose keys are ptc task_id `value`s and values are ptc task_id `text`s",

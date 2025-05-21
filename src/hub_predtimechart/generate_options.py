@@ -78,6 +78,6 @@ def ptc_options_for_hub(hub_config: HubConfigPtc):
         options['disclaimer'] = hub_config.disclaimer
 
     # set `initial_xaxis_range`
-    options['initial_xaxis_range'] = None
+    options['initial_xaxis_range'] = hub_config.initial_xaxis_range if hub_config.initial_xaxis_range else None
 
     return options
