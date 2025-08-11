@@ -7,17 +7,25 @@ from typing import Optional
 import pandas as pd
 import polars as pl
 import yaml
-from jsonschema import ValidationError, validate, FormatChecker
+from hubdata import HubConnection
+from jsonschema import FormatChecker, ValidationError, validate
 
-from hub_predtimechart.hub_config import HubConfig
 from hub_predtimechart.ptc_schema import ptc_config_schema
 
 
-class HubConfigPtc(HubConfig):
+class HubConfigPtc(HubConnection):
     """
-    A HubConfig subclass that adds various visualization-related variables from a hub.
+    A `hubdata.HubConnection` subclass that adds various visualization-related variables from a hub. Note that this
+    class only works with local filesystems, and therefore only accepts a Path for `hub_path`.
 
     Instance variables:
+
+    Via HubConnection:
+    - hub_path: str or Path pointing to a hub's root directory as passed to `hubdata.connect_hub()`
+    - tasks: the hub's `tasks.json` contents as a dict
+    - model_metadata_schema: "" `model-metadata-schema.json` ""
+
+    Via this class:
     - rounds_idx: as loaded from `ptc_config_file`
     - reference_date_col_name: ""
     - horizon_col_name: ""
@@ -36,13 +44,16 @@ class HubConfigPtc(HubConfig):
     """
 
 
-    def __init__(self, hub_dir: Path, ptc_config_file: Path):
+    def __init__(self, hub_path: Path, ptc_config_file: Path):
         """
-        :param hub_dir: as defined in HubConfig.__init__()
+        :param hub_path: Path pointing to a hub's root directory as passed to `hubdata.connect_hub()`
         :param ptc_config_file: location of `predtimechart-config.yml` (or other named) file that matches ptc_schema.py.
-            this file specifies how to process `hub_dir` to get predtimechart output
+            this file specifies how to process `hub_path` to get predtimechart output
         """
-        super().__init__(hub_dir)
+        if not isinstance(hub_path, Path):
+            raise TypeError(f"hub_path was not a Path. hub_path={hub_path!r}, type={type(hub_path).__name__}")
+
+        super().__init__(hub_path)
 
         if not ptc_config_file.exists():
             raise RuntimeError(f"predtimechart config file not found: {ptc_config_file}")
@@ -67,8 +78,8 @@ class HubConfigPtc(HubConfig):
 
         # set model_id_to_metadata
         self.model_id_to_metadata: dict[str, dict] = {}
-        for model_metadata_file in (list((self.hub_dir / 'model-metadata').glob('*.yml')) +
-                                    list((self.hub_dir / 'model-metadata').glob('*.yaml'))):
+        for model_metadata_file in (list((self.hub_path / 'model-metadata').glob('*.yml')) +
+                                    list((self.hub_path / 'model-metadata').glob('*.yaml'))):
             with open(model_metadata_file) as fp:
                 model_metadata = yaml.safe_load(fp)
                 model_id = f"{model_metadata['team_abbr']}-{model_metadata['model_abbr']}"
@@ -90,8 +101,8 @@ class HubConfigPtc(HubConfig):
         Returns a Path to the model output file corresponding to `model_id` and `reference_date`. Returns None if none
         found.
         """
-        poss_output_files = [self.hub_dir / 'model-output' / model_id / f"{reference_date}-{model_id}.csv",
-                             self.hub_dir / 'model-output' / model_id / f"{reference_date}-{model_id}.parquet"]
+        poss_output_files = [self.hub_path / 'model-output' / model_id / f"{reference_date}-{model_id}.csv",
+                             self.hub_path / 'model-output' / model_id / f"{reference_date}-{model_id}.parquet"]
         for poss_output_file in poss_output_files:
             if poss_output_file.exists():
                 return poss_output_file
@@ -104,7 +115,7 @@ class HubConfigPtc(HubConfig):
         Loads the target data csv file from the hub repo for now, file path for target data is hard coded to 'target-data'.
         Raises FileNotFoundError if target data file does not exist.
         """
-        target_data_file_path = self.hub_dir / 'target-data' / self.get_target_data_file_name()
+        target_data_file_path = self.hub_path / 'target-data' / self.get_target_data_file_name()
         try:
             # the override schema handles the 'US' location (the only location that doesn't parse as Int64)
             # todo hard-coded column names
@@ -165,8 +176,10 @@ def _validate_hub_ptc_compatibility(hub_config_ptc: HubConfigPtc):
     if not hub_config_ptc.model_tasks:
         raise ValidationError(f"no applicable model_task entries were found")
 
-    # validate: model metadata must contain a boolean `designated_model` field
-    if 'designated_model' not in hub_config_ptc.model_metadata_schema['required']:
+    # validate: model metadata must be present and must contain a boolean `designated_model` field
+    if hub_config_ptc.model_metadata_schema is None:
+        raise ValidationError(f"model metadata schema not found")
+    elif 'designated_model' not in hub_config_ptc.model_metadata_schema['required']:
         raise ValidationError(f"'designated_model' not found in model metadata schema's 'required' section")
 
     # validate: all model_task entries have the same task_ids. frozenset lets us make a set of sets
