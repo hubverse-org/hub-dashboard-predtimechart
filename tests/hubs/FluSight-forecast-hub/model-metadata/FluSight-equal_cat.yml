@@ -4,11 +4,14 @@ model_name: "Baseline model with equal probabilities for each rate-trend categor
 model_abbr: "equal_cat"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Rebecca Borchering",
-    "affiliation": "CDC",
-    "email": "xhq2@cdc.gov"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://github.com/cdcepi/FluSight-forecast-hub"
 license: "CC-BY-4.0"

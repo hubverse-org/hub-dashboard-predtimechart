@@ -3,41 +3,14 @@ team_abbr: "JHU_CSSE"
 model_name: "CSSE Ensemble"
 model_abbr: "CSSE_Ensemble"
 model_contributors: [
-  {
-    "name": "Lauren Gardner",
-    "affiliation": "Johns Hopkins University",
-    "email": "l.gardner@jhu.edu"
-  },
-  {
-    "name": "Hongru Du",
-    "affiliation": "Johns Hopkins University",
-    "email": "hdu9@jh.edu"
-  },
-  {
-    "name": "Hao Frank Yang",
-    "affiliation": "Johns Hopkins University",
-    "email": "haofrankyang@jhu.edu"
-  },
-  {
-    "name": "Shaochong Xu",
-    "affiliation": "Johns Hopkins University",
-    "email": "sxu75@jh.edu"
-  },
-  {
-    "name": "Xianglong Wang",
-    "affiliation": "Johns Hopkins University",
-    "email": "xwang344@jh.edu"
-  },
-  {
-    "name": "Yang Zhao",
-    "affiliation": "Johns Hopkins University",
-    "email": "yzhao229@jh.edu"
-  },
-  {
-    "name": "Pu Wang",
-    "affiliation": "New York University",
-    "email": "pw2425@nyu.edu"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 license: "CC-BY-4.0"
 designated_model: true

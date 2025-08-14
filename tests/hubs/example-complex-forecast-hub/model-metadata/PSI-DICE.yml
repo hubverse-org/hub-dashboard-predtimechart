@@ -4,21 +4,14 @@ model_name: "Dynamics of Interacting Community Epidemics"
 model_abbr: "DICE"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Michal Ben-Nun",
-    "affiliation": "Predictive Science Inc",
-    "email": "mbennun@predsci.com"
-  },
-  {
-    "name": "James Turtle",
-    "affiliation": "Predictive Science Inc",
-    "email": "jturtle@predsci.com"
-  },
-  {
-    "name": "Pete Riley",
-    "affiliation": "Predictive Science Inc",
-    "email": "pete@predsci.com"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://www.predsci.com/usa-flu-hosp/"
 license: "CC-BY-4.0"

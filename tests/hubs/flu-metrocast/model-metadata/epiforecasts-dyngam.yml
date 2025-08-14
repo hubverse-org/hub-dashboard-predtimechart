@@ -4,12 +4,14 @@ model_name: "dyngam"
 model_abbr: "dyngam"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Kaitlyn E. Johnson",
-    "affiliation": "London School of Hygiene and Tropical Medicine",
-    "email": "kaitlyn.johnson@lshtm.ac.uk",
-    "orcid": "0000-0001-8011-0012"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 license: "CC-BY-4.0"
 designated_model: true

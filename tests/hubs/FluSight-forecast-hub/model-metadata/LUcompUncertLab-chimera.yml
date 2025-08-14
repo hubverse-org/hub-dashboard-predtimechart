@@ -4,11 +4,14 @@ model_name: "chimera"
 model_abbr: "chimera"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "tom mcandrew",
-    "affiliation": "lehigh university",
-    "email": "mcandrew@lehigh.edu"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://github.com/computationalUncertaintyLab"
 license: "CC-BY-4.0"

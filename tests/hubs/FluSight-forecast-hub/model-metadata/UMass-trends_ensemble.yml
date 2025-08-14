@@ -4,26 +4,14 @@ model_name: "Ensemble of baseline models with trends"
 model_abbr: "trends_ensemble"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Nutcha Wattanachit",
-    "affiliation": "UMass Amherst",
-    "email": "nwattanachit@schoolph.umass.edu"
-  },
-  {
-    "name": "Aaron Gerding",
-    "affiliation": "UMass Amherst",
-    "email": "agerding@umass.edu"
-  },
-  {
-    "name": "Nick Reich",
-    "affiliation": "UMass Amherst",
-    "email": "nick@umass.edu"
-  },
-  {
-    "name": "Evan Ray",
-    "affiliation": "UMass Amherst",
-    "email": "elray@umass.edu"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://github.com/reichlab/flu-hosp-models-2021-2022"
 license: "CC-BY-4.0"

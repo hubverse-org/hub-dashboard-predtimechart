@@ -4,11 +4,14 @@ model_name: "model"
 model_abbr: "model"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Akilan Meiyappan",
-    "affiliation": "Guidehouse",
-    "email": "ameiyappan@guidehouse.com"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://github.com/gh-ai-solu/flusight-21-22/"
 license: "CC-BY-4.0"

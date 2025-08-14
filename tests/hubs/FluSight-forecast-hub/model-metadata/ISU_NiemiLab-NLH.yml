@@ -4,16 +4,14 @@ model_name: "Nonlinear ASG hierarchical model with discrepancy"
 model_abbr: "NLH"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Spencer Wadsworth",
-    "affiliation": "Iowa State",
-    "email": "sgw96@iastate.edu"
-  },
-  {
-    "name": "Jarad Niemi",
-    "affiliation": "Iowa State",
-    "email": "niemi@iastate.edu"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://jarad.me"
 license: "CC-BY-4.0"

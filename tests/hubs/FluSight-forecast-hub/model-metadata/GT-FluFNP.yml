@@ -3,21 +3,14 @@ team_abbr: "GT"
 model_name: "FluFNP"
 model_abbr: "FluFNP"
 model_contributors: [
-  {
-    "name": "B.Aditya Prakash",
-    "affiliation": "GeorgiaTech",
-    "email": "badityap@cc.gatech.edu"
-  },
-  {
-    "name": "Harshavardhan Kamarthi",
-    "affiliation": "GeorgiaTech",
-    "email": "hkamarthi3@gatech.edu"
-  },
-  {
-    "name": "Zhiyuan Zhao",
-    "affiliation": "GeorgiaTech",
-    "email": "leozhao1997@gatech.edu"
-  },
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://adityalab.cc.gatech.edu/"
 license: "CC-BY-4.0"
