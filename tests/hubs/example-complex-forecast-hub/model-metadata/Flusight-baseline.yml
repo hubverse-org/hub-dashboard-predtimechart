@@ -4,19 +4,14 @@ model_name: "Baseline model using reported weekly admissions"
 model_abbr: "baseline"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Evan L. Ray",
-    "affiliation": "University of Massachusetts, Amherst",
-    "email": "elray@umass.edu"
-  },
-  {
-    "name": "Nutcha Wattanachit",
-    "affiliation": "University of Massachusetts, Amherst"
-  },
-  {
-    "name": "Ryan Tibshirani",
-    "affiliation": "UC Berkeley"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://github.com/cdcepi/Flusight-baseline"
 license: "CC-BY-4.0"

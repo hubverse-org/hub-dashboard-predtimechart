@@ -4,11 +4,14 @@ model_name: "Ensemble of time series models"
 model_abbr: "flusion"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Evan Ray",
-    "affiliation": "UMass Amherst",
-    "email": "elray@umass.edu"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://github.com/reichlab/flusion"
 license: "CC-BY-4.0"

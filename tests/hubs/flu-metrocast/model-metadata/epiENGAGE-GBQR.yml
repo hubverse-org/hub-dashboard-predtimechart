@@ -4,31 +4,14 @@ model_name: "Gradient Boosting of Quantile Regression"
 model_abbr: "GBQR"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Dongah Kim",
-    "affiliation": "Department of Integrative Biology, University of Texas Austin",
-    "email": "dongah.kim@austin.utexas.edu"
-  },
-  {
-    "name": "Remy Pasco",
-    "affiliation": "Department of Mathematics and Statistics, University of Massachussetts Amherst",
-    "email": "pasco@austin.utexas.edu"
-  },
-  {
-    "name": "Lauren Ancel Meyers",
-    "affiliation": "Department of Integrative Biology, University of Texas Austin",
-    "email": "laurenmeyers@austin.utexas.edu"
-  },
-  {
-    "name": "Nick G. Reich",
-    "affiliation": "Department of Biostatistics and Epidemiology, University of Massachussetts Amherst",
-    "email": "nick@umass.edu"
-  },
-  {
-    "name": "Evan Ray",
-    "affiliation": "UMass Amherst",
-    "email": "elray@umass.edu"
-  },
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 license: "CC-BY-4.0"
 designated_model: true

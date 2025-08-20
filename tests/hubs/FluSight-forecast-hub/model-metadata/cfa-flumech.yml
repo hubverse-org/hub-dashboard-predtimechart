@@ -4,16 +4,14 @@ model_name: "flu-mechanistic"
 model_abbr: "flumech"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Sam Brand",
-    "affiliation": "CFA/CDC",
-    "email": "usi1@cdc.gov"
-  },
-  {
-    "name": "Trevor Martin",
-    "affiliation": "CFA/CDC",
-    "email": "upx3@cdc.gov"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 license: "CC-BY-4.0"
 designated_model: true

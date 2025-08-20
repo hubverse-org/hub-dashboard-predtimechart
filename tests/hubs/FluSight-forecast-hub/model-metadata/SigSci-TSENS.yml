@@ -4,21 +4,14 @@ model_name: "Time Series Ensemble"
 model_abbr: "TSENS"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "VP Nagraj",
-    "affiliation": "Signature Science, LLC",
-    "email": "pnagraj@signaturescience.com"
-  },
-  {
-    "name": "Amy Benefield",
-    "affiliation": "Signature Science, LLC",
-    "email": "abenefield@signaturescience.com"
-  },
-  {
-    "name": "Desiree Williams",
-    "affiliation": "Signature Science, LLC",
-    "email": "dwilliams@signaturescience.com"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://github.com/signaturescience/fiphde"
 license: "CC-BY-4.0"

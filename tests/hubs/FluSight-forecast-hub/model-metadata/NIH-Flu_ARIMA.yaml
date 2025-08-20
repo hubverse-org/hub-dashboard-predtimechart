@@ -4,16 +4,14 @@ model_name: "ARIMA model with flu-related covariates"
 model_abbr: "Flu_ARIMA"
 model_version: "2.0"
 model_contributors: [
-  {
-    "name": "Amanda Perofsky",
-    "affiliation": "Fogarty International Center, National Institutes of Health",
-    "email": "amanda.perofsky@nih.gov"
-  },
-  {
-    "name": "Cécile Viboud",
-    "affiliation": "Fogarty International Center, National Institutes of Health",
-    "email": "viboudc@mail.nih.gov"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://github.com/midas-network/flu-scenario-modeling-hub/tree/main/data-processed/NIH-Flu_TS"
 license: "CC-BY-4.0"

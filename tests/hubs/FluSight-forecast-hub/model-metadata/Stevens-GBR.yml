@@ -4,31 +4,14 @@ model_name: "An ensemble of gradient boosting regressors"
 model_abbr: "GBR"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Aditya Brahme",
-    "affiliation": "Stevens Institute of Technology",
-    "email": "abrahme@stevens.edu"
-  },
-  {
-    "name": "Rutvik Raut",
-    "affiliation": "Stevens Institute of Technology",
-    "email": "rraut@stevens.edu"
-  },
-  {
-    "name": "Bhumiti Gohel",
-    "affiliation": "Stevens Institute of Technology",
-    "email": "bgohel@stevens.edu"
-  },
-  {
-    "name": "Sanika Mhadgut",
-    "affiliation": "Stevens Institute of Technology",
-    "email": "smhadgut@stevens.edu"
-  },
-  {
-    "name": "Nikhil Muralidhar",
-    "affiliation": "Stevens Institute of Technology",
-    "email": "nmurali1@stevens.edu"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://sites.google.com/view/nikhil-muralidhar"
 license: "CC-BY-4.0"

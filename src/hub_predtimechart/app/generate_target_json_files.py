@@ -133,11 +133,11 @@ def ptc_target_data(model_task: ModelTask, target_data_df: pl.DataFrame, task_id
         else:
             target_data_df = target_data_df.filter(pl.col('as_of') == max_as_of.isoformat())
     else:
-      # the file is one that is assumed to be updated weekly and so we can
-      # assume that the effective as_of date for this file is the same as
-      # max_available_ref_date (the newest date)
-      if max_available_ref_date is not None and reference_date != max_available_ref_date:
-          return None
+        # the file is one that is assumed to be updated weekly and so we can
+        # assume that the effective as_of date for this file is the same as
+        # max_available_ref_date (the newest date)
+        if max_available_ref_date is not None and reference_date != max_available_ref_date:
+            return None
 
     # until all hubs implement our new time-series target data standard, we condition on
     # hub_config.target_data_file_name, which acts as a flag indicating whether the hub implements the new standard or

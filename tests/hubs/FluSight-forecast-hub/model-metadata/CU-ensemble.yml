@@ -3,26 +3,14 @@ team_abbr: "CU"
 model_name: "Ensemble"
 model_abbr: "ensemble"
 model_contributors: [
-  {
-    "name": "Rami Yaari",
-    "affiliation": "Columbia University",
-    "email": "ry2460@cumc.columbia.edu"
-  },
-  {
-    "name": "Teresa Yamana",
-    "affiliation": "Columbia University",
-    "email": "tky2104@cumc.columbia.edu"
-  },
-  {
-    "name": "Sen Pei",
-    "affiliation": "Columbia University",
-    "email": "sp3449@cumc.columbia.edu"
-  },
-  {
-    "name": "Jeffrey Shaman",
-    "affiliation": "Columbia University",
-    "email": "jls106@cumc.columbia.edu"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://blogs.cuit.columbia.edu/jls106/"
 license: "CC-BY-4.0"

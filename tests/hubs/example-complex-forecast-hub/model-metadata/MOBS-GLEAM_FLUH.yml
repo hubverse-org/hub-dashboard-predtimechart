@@ -4,40 +4,14 @@ model_name: "GLEAM Flu Forecasting Model"
 model_abbr: "GLEAM_FLUH"
 model_version: "1.0"
 model_contributors: [
-  {
-    "name": "Alessandro Vespignani",
-    "affiliation": "MOBS Lab, Northeastern University",
-    "email": "alexves@gmail.com"
-  },
-  {
-    "name": "Matteo Chinazzi",
-    "affiliation": "MOBS Lab, Northeastern University",
-    "email": "m.chinazzi@northeastern.edu"
-  },
-  {
-    "name": "Jessica T. Davis",
-    "affiliation": "MOBS Lab, Northeastern University",
-    "email": "jes.davis@northeastern.edu"
-  },
-  {
-    "name": "Kunpeng Mu",
-    "affiliation": "MOBS Lab, Northeastern University",
-    "email": "mu.k@northeastern.edu"
-  },
-  {
-    "name": "Ana Pastore y Piontti",
-    "affiliation": "MOBS Lab, Northeastern University",
-    "email": "anapastore@gmail.com"
-  },
-  {
-    "name": "Nicole Samay",
-    "affiliation": "MOBS Lab, Northeastern University"
-  },
-  {
-    "name": "Xinyue Xiong",
-    "affiliation": "MOBS Lab, Northeastern University",
-    "email": "xiong.xin@northeastern.edu"
-  }
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 website_url: "https://www.mobs-lab.org/"
 license: "CC-BY-NC-SA-4.0"

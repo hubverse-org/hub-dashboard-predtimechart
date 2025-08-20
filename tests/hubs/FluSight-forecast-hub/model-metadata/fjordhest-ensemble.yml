@@ -3,21 +3,14 @@ team_abbr: fjordhest
 model_name: fjordhest-ensemble
 model_abbr: ensemble
 model_contributors: [
-{
-"name": "Sasi Kandula",
-"affiliation": "Norwegian Institute of Public Health",
-"email": "sasikiran.kandula@fhi.no"
-},
-{
-"name": "Alfonso Diz-Lois Palomares",
-"affiliation": "Norwegian Institute of Public Health; University of Oslo",
-"email": "Alfonso.Diz-LoisPalomares@fhi.no"
-},
-{
-"name": "Birgitte De Blasio",
-"affiliation": "Norwegian Institute of Public Health; University of Oslo",
-"email": "Birgitte.Freiesleben.DeBlasio@fhi.no"
-}
+    {
+        "name": "Joe Bloggs",
+        "email": "j.bloggs@email.com"
+    },
+    {
+        "name": "J Smith",
+        "email": "j.smith@email.com"
+    }
 ]
 license: CC-BY_SA-4.0
 designated_model: true
