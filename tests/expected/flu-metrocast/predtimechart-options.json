@@ -14,6 +14,12 @@
   "initial_xaxis_range": null,
   "intervals": ["0%", "50%", "95%"],
   "models": ["epiENGAGE-Copycat", "epiENGAGE-GBQR", "epiENGAGE-INFLAenza", "epiforecasts-dyngam"],
+  "model_urls": {
+    "epiENGAGE-Copycat": "https://github.com/reichlab/flu-metrocast/blob/main/model-metadata/epiENGAGE-Copycat.yml",
+    "epiENGAGE-INFLAenza": "https://github.com/reichlab/flu-metrocast/blob/main/model-metadata/epiENGAGE-INFLAenza.yml",
+    "epiENGAGE-GBQR": "https://github.com/reichlab/flu-metrocast/blob/main/model-metadata/epiENGAGE-GBQR.yml",
+    "epiforecasts-dyngam": "https://github.com/reichlab/flu-metrocast/blob/main/model-metadata/epiforecasts-dyngam.yml"
+  },
   "target_variables": [
     {
       "plot_text": "ED visits due to ILI",

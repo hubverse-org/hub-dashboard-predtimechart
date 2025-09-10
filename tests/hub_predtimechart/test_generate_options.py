@@ -1,7 +1,9 @@
 import json
 from pathlib import Path
 
-from hub_predtimechart.generate_options import ptc_options_for_hub
+import pytest
+
+from hub_predtimechart.generate_options import ptc_options_for_hub, _host_owner_name
 from hub_predtimechart.hub_config_ptc import HubConfigPtc
 
 
@@ -64,3 +66,30 @@ def test_generate_options_initial_xaxis_range_covid19_forecast_hub():
     exp_options['initial_xaxis_range'] = hub_config.initial_xaxis_range
     act_options = ptc_options_for_hub(hub_config)
     assert act_options == exp_options
+
+
+#
+# model_urls tests
+#
+
+@pytest.mark.parametrize("hub_dir,exp_host_owner_name", [
+    ('tests/hubs/covid19-forecast-hub',
+     ('github', 'CDCgov', 'covid19-forecast-hub')),
+    ('tests/hubs/example-complex-forecast-hub',
+     ('github', 'Infectious-Disease-Modeling-Hubs', 'example-complex-forecast-hub')),
+    ('tests/hubs/flu-metrocast',
+     ('github', 'reichlab', 'flu-metrocast')),
+    ('tests/hubs/FluSight-forecast-hub',
+     ('github', 'cdcepi', 'FluSight-forecast-hub'))])
+def test__host_owner_name(hub_dir, exp_host_owner_name):
+    hub_dir = Path(hub_dir)
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    assert _host_owner_name(hub_config) == exp_host_owner_name
+
+
+def test__host_owner_name_invalid_keys():
+    hub_dir = Path('tests/hubs/flu-metrocast')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    hub_config.admin['repository'] = {'bad-repo': 0}
+    with pytest.raises(RuntimeError, match="invalid admin repository keys"):
+        _host_owner_name(hub_config)

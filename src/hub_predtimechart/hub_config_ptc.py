@@ -82,6 +82,11 @@ class HubConfigPtc(HubConnection):
                                     list((self.hub_path / 'model-metadata').glob('*.yaml'))):
             with open(model_metadata_file) as fp:
                 model_metadata = yaml.safe_load(fp)
+
+                # add a custom hub-dashboard-predtimechart field to the loaded metadata for functions that need the
+                # original file name (which could be .yml OR .yaml)
+                model_metadata['file_name'] = model_metadata_file.name
+
                 model_id = f"{model_metadata['team_abbr']}-{model_metadata['model_abbr']}"
                 self.model_id_to_metadata[model_id] = model_metadata
 
