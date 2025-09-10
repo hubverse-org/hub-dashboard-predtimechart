@@ -73,6 +73,18 @@ def ptc_options_for_hub(hub_config: HubConfigPtc):
     options['models'].sort()
     options['initial_checked_models'] = hub_config.initial_checked_models
 
+    # set `model_urls`
+    options['model_urls'] = {}
+    for model_id, metadata in hub_config.model_id_to_metadata.items():
+        if model_id not in options['models']:  # o/w causes a predtimechart validation error
+            continue
+
+        host, owner, name = _host_owner_name(hub_config)
+        repo_url = f"https://{host}.com/{owner}/{name}"
+
+        # recall that 'file_name' is a custom hub-dashboard-predtimechart field:
+        options['model_urls'][model_id] = f"{repo_url}/blob/main/model-metadata/{metadata['file_name']}"
+
     # add `disclaimer` if present
     if hub_config.disclaimer is not None:
         options['disclaimer'] = hub_config.disclaimer
@@ -81,3 +93,40 @@ def ptc_options_for_hub(hub_config: HubConfigPtc):
     options['initial_xaxis_range'] = hub_config.initial_xaxis_range if hub_config.initial_xaxis_range else None
 
     return options
+
+
+def _host_owner_name(hub_config):
+    """
+    `ptc_options_for_hub()` helper that returns a 3-tuple for `hub_config`'s `repository` section, handling the various
+    schemas found in the test hubs
+
+    cases:
+    - 'host', 'owner', 'name' (current schema)  # flu-metrocast
+    - 'host', 'owner', 'repository'             # example-complex-forecast-hub, FluSight-forecast-hub
+    - 'host', 'url', 'name'                     # covid19-forecast-hub
+
+    :param hub_config: a HubConfigPtc
+    :return: a 3-tuple: (host, owner, name)
+    """
+    # validate schema
+    admin_repo = hub_config.admin['repository']
+    valid_keys = [{'host', 'owner', 'name'},
+                  {'host', 'owner', 'repository'},
+                  {'host', 'url', 'name'}]
+    admin_repo_keys = set(admin_repo.keys())
+    if admin_repo_keys not in valid_keys:
+        raise RuntimeError(f"invalid admin repository keys. {admin_repo_keys=}, {valid_keys=}")
+
+    host, owner, name = admin_repo['host'], None, None
+    if admin_repo_keys == {'host', 'owner', 'name'}:
+        owner = admin_repo['owner']
+        name = admin_repo['name']
+    elif admin_repo_keys == {'host', 'owner', 'repository'}:
+        owner = admin_repo['owner']
+        name = admin_repo['repository']
+    elif admin_repo_keys == {'host', 'url', 'name'}:
+        owner = admin_repo['url'].split('/')[3]  # ex: "https://github.com/CDCgov/covid19-forecast-hub"
+        name = admin_repo['name']
+    else:
+        raise RuntimeError(f"invalid admin repository keys. {admin_repo_keys=}")
+    return host, owner, name

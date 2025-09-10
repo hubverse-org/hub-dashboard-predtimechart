@@ -76,7 +76,10 @@
   },
   "initial_as_of": "2024-11-09",
   "current_date": "2024-11-09",
-  "models": [],
+  "model_urls": {
+    "UMass-ar6_pooled": "https://github.com/CDCgov/covid19-forecast-hub/blob/main/model-metadata/UMass-ar6_pooled.yml"
+  },
+  "models": ["UMass-ar6_pooled"],
   "initial_checked_models": [],
   "initial_xaxis_range": null
 }
