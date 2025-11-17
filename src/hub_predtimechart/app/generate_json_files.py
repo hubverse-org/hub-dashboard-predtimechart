@@ -5,6 +5,7 @@ from pathlib import Path
 
 import click
 import pandas as pd
+import pyarrow.compute as pc
 import structlog
 
 from hub_predtimechart.generate_data import forecast_data_for_model_df
@@ -80,27 +81,21 @@ def _generate_forecast_json_files(hub_config: HubConfigPtc, output_dir: Path, is
         newest_reference_date = max([date.fromisoformat(date_str) for date_str in available_ref_dates]).isoformat()
         df_cols_to_use = ([model_task.viz_target_col_name] + model_task.viz_task_ids +
                           [hub_config.target_date_col_name, 'output_type', 'output_type_id', 'value'])
-
-        # Load all data for this model_task using hubdata's to_table() method, which applies the schema
-        # from tasks.json. This ensures task_id columns (like location) are properly typed as strings
-        # based on the hub's schema, preventing dtype inference issues with numeric-only values like "01", "02"
-        columns_to_load = df_cols_to_use + ['model_id', hub_config.reference_date_col_name]
-        pa_table = hub_config.to_table(columns=columns_to_load)
-        all_data_df = pa_table.to_pandas()
-
         for reference_date in model_task.viz_reference_dates:  # ex: ['2022-10-22', '2022-10-29', ...]
-            # Filter data for this reference_date (convert string to date for comparison)
-            ref_date_obj = date.fromisoformat(reference_date)
-            ref_date_df = all_data_df[all_data_df[hub_config.reference_date_col_name] == ref_date_obj]
-
             # set model_id_to_df
             model_id_to_df: dict[str, pd.DataFrame] = {}
             for model_id in hub_config.model_id_to_metadata:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
-                # Filter data for this model_id
-                model_df = ref_date_df[ref_date_df['model_id'] == model_id]
-                if not model_df.empty:
-                    # Keep only the columns we need (remove model_id and reference_date used for filtering)
-                    model_id_to_df[model_id] = model_df[df_cols_to_use].copy()
+                model_output_file = hub_config.model_output_file_for_ref_date(model_id, reference_date)
+                if model_output_file:
+                    # Use hubdata's to_table() method with filtering to load only this model's data
+                    # for this reference_date. This applies the schema from tasks.json, ensuring
+                    # task_id columns (like location) are properly typed as strings, preventing
+                    # dtype inference issues with numeric-only values like "01", "02"
+                    columns_to_load = df_cols_to_use
+                    filter_expr = (pc.field('model_id') == model_id) & \
+                                  (pc.field(hub_config.reference_date_col_name) == date.fromisoformat(reference_date))
+                    pa_table = hub_config.to_table(columns=columns_to_load, filter=filter_expr)
+                    model_id_to_df[model_id] = pa_table.to_pandas()
 
             if not model_id_to_df:  # no model outputs for reference_date
                 continue
