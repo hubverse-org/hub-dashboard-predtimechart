@@ -1,0 +1,21 @@
+team_name: "Test"
+team_abbr: "Test"
+model_name: "Test model for numeric-only location codes"
+model_abbr: "NumericOnly"
+model_version: "1.0"
+model_contributors: [
+    {
+        "name": "Test User",
+        "email": "test@example.com"
+    }
+]
+website_url: "https://github.com/hubverse-org/hub-dashboard-predtimechart"
+license: "MIT"
+team_funding: "N/A"
+designated_model: false
+methods: "Test model for regression testing dtype inference with numeric-only location codes like '01', '02'."
+data_inputs: "None - test data"
+methods_long: "This is a test model used to verify that models with exclusively numeric location codes (e.g., '01', '02') are properly handled and not excluded from dashboard visualizations due to dtype inference issues."
+ensemble_of_models: false
+ensemble_of_hub_models: false
+source_notes: "Test data for issue #78"

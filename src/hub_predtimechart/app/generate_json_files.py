@@ -5,6 +5,7 @@ from pathlib import Path
 
 import click
 import pandas as pd
+import pyarrow.compute as pc
 import structlog
 
 from hub_predtimechart.generate_data import forecast_data_for_model_df
@@ -86,13 +87,14 @@ def _generate_forecast_json_files(hub_config: HubConfigPtc, output_dir: Path, is
             for model_id in hub_config.model_id_to_metadata:  # ex: ['Flusight-baseline', 'MOBS-GLEAM_FLUH', ...]
                 model_output_file = hub_config.model_output_file_for_ref_date(model_id, reference_date)
                 if model_output_file:
-                    if model_output_file.suffix == '.csv':
-                        model_id_to_df[model_id] = pd.read_csv(model_output_file, usecols=df_cols_to_use)
-                    elif model_output_file.suffix in ['.parquet', '.pqt']:
-                        model_id_to_df[model_id] = pd.read_parquet(model_output_file, columns=df_cols_to_use)
-                    else:
-                        raise RuntimeError(f"unsupported model output file type: {model_output_file!r}. "
-                                           f"Only .csv and .parquet are supported")
+                    # Use hubdata's to_table() method with filtering to load only this model's data
+                    # for this reference_date. This applies the schema from tasks.json, ensuring
+                    # task_id columns (like location) are properly typed as strings, preventing
+                    # dtype inference issues with numeric-only values like "01", "02"
+                    filter_expr = (pc.field('model_id') == model_id) & \
+                                  (pc.field(hub_config.reference_date_col_name) == date.fromisoformat(reference_date))
+                    pa_table = hub_config.to_table(columns=df_cols_to_use, filter=filter_expr)
+                    model_id_to_df[model_id] = pa_table.to_pandas()
 
             if not model_id_to_df:  # no model outputs for reference_date
                 continue

@@ -21,7 +21,7 @@ def test_hub_config_complex_forecast_hub():
     assert hub_config.initial_checked_models == ['Flusight-baseline']
     assert hub_config.disclaimer == "Most forecasts have failed to reliably predict rapid changes in the trends of reported cases and hospitalizations. Due to this limitation, they should not be relied upon for decisions about the possibility or timing of rapid changes in trends."
     assert (sorted(list(hub_config.model_id_to_metadata.keys())) ==
-            sorted(['Flusight-baseline', 'MOBS-GLEAM_FLUH', 'PSI-DICE']))
+            sorted(['Flusight-baseline', 'MOBS-GLEAM_FLUH', 'PSI-DICE', 'Test-NumericOnly']))
     assert hub_config.target_data_file_name == 'covid-hospital-admissions.csv'
 
     model_task_0 = hub_config.model_tasks[0]  # only one

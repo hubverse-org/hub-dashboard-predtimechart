@@ -16,6 +16,7 @@ def test_generate_forecast_json_files_ecfh(tmp_path):
     json_files = _generate_forecast_json_files(hub_config, output_dir)
     assert set(json_files) == {output_dir / 'wk-inc-flu-hosp_US_2022-10-22.json',
                                output_dir / 'wk-inc-flu-hosp_01_2022-10-22.json',
+                               output_dir / 'wk-inc-flu-hosp_02_2022-10-22.json',
                                output_dir / 'wk-inc-flu-hosp_US_2022-11-19.json',
                                output_dir / 'wk-inc-flu-hosp_01_2022-11-19.json',
                                output_dir / 'wk-inc-flu-hosp_US_2022-12-17.json',
@@ -26,6 +27,7 @@ def test_generate_forecast_json_files_ecfh(tmp_path):
             exp_data = json.load(exp_fp)
             act_data = json.load(act_fp)
             assert act_data == exp_data
+
 
 
 def test_generate_forecast_json_files_flu_metrocast(tmp_path):
@@ -90,6 +92,7 @@ def test_generate_forecast_json_files_skip_files(tmp_path):
     json_files = Path(output_dir).glob("*")
     assert set(json_files) == {output_dir / 'wk-inc-flu-hosp_US_2022-10-22.json',
                                output_dir / 'wk-inc-flu-hosp_01_2022-10-22.json',
+                               output_dir / 'wk-inc-flu-hosp_02_2022-10-22.json',
                                output_dir / 'wk-inc-flu-hosp_US_2022-11-19.json',
                                output_dir / 'wk-inc-flu-hosp_01_2022-11-19.json',
                                output_dir / 'wk-inc-flu-hosp_01_2022-12-17.json'}
@@ -122,6 +125,7 @@ def test_generate_forecast_json_files_regenerate(tmp_path):
     json_files = _generate_forecast_json_files(hub_config, output_dir, True)
     assert set(json_files) == {output_dir / 'wk-inc-flu-hosp_US_2022-10-22.json',
                                output_dir / 'wk-inc-flu-hosp_01_2022-10-22.json',
+                               output_dir / 'wk-inc-flu-hosp_02_2022-10-22.json',
                                output_dir / 'wk-inc-flu-hosp_US_2022-11-19.json',
                                output_dir / 'wk-inc-flu-hosp_01_2022-11-19.json',
                                output_dir / 'wk-inc-flu-hosp_US_2022-12-17.json',
