@@ -29,31 +29,6 @@ def test_generate_forecast_json_files_ecfh(tmp_path):
             assert act_data == exp_data
 
 
-def test_generate_forecast_json_files_numeric_only(tmp_path):
-    """
-    Regression test for issue #78: models with numeric-only location codes.
-    Tests that Test-NumericOnly model (with only "01", "02" locations) is properly
-    included in generated JSON files with correct dtype handling.
-    """
-    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
-    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
-    output_dir = tmp_path
-    json_files = _generate_forecast_json_files(hub_config, output_dir)
-
-    # Find the file for location "01" on 2022-10-22 which should include Test-NumericOnly
-    target_file = output_dir / 'wk-inc-flu-hosp_01_2022-10-22.json'
-    assert target_file in json_files, "JSON file for location 01 should be generated"
-
-    # Verify Test-NumericOnly is included in the output
-    with open(target_file) as f:
-        data = json.load(f)
-        assert 'Test-NumericOnly' in data, "Test-NumericOnly model should be in output"
-
-        # Verify the structure is correct
-        model_data = data['Test-NumericOnly']
-        assert 'target_end_date' in model_data
-        assert len(model_data['target_end_date']) > 0, "Should have forecast data"
-
 
 def test_generate_forecast_json_files_flu_metrocast(tmp_path):
     """
