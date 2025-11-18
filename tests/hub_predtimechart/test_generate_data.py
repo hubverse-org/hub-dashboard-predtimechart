@@ -101,5 +101,3 @@ def test_forecast_data_for_model_df_invalid_target():
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
     with pytest.raises(RuntimeError, match="not exactly one ModelTask found for target"):
         forecast_data_for_model_df(hub_config, None, 'bad target', None)
-
-

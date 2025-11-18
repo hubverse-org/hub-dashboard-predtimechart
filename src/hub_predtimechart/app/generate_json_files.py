@@ -91,10 +91,9 @@ def _generate_forecast_json_files(hub_config: HubConfigPtc, output_dir: Path, is
                     # for this reference_date. This applies the schema from tasks.json, ensuring
                     # task_id columns (like location) are properly typed as strings, preventing
                     # dtype inference issues with numeric-only values like "01", "02"
-                    columns_to_load = df_cols_to_use
                     filter_expr = (pc.field('model_id') == model_id) & \
                                   (pc.field(hub_config.reference_date_col_name) == date.fromisoformat(reference_date))
-                    pa_table = hub_config.to_table(columns=columns_to_load, filter=filter_expr)
+                    pa_table = hub_config.to_table(columns=df_cols_to_use, filter=filter_expr)
                     model_id_to_df[model_id] = pa_table.to_pandas()
 
             if not model_id_to_df:  # no model outputs for reference_date
