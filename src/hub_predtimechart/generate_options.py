@@ -70,7 +70,8 @@ def ptc_options_for_hub(hub_config: HubConfigPtc):
     for model_id, metadata in hub_config.model_id_to_metadata.items():
         if metadata['designated_model'] or model_id in hub_config.initial_checked_models:
             options['models'].append(model_id)
-    options['models'].sort()
+    options['models'].sort(key=lambda model_id: (model_id not in hub_config.initial_checked_models,
+                                                 model_id))  # put initial_checked_models at top
     options['initial_checked_models'] = hub_config.initial_checked_models
 
     # set `model_urls`
