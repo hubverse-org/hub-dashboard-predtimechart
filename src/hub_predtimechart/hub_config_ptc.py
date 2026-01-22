@@ -8,6 +8,7 @@ import pandas as pd
 import polars as pl
 import yaml
 from hubdata import HubConnection
+from hubdata.connect_target_data import TargetType, connect_target_data
 from jsonschema import FormatChecker, ValidationError, validate
 
 from hub_predtimechart.ptc_schema import ptc_config_schema
@@ -117,27 +118,42 @@ class HubConfigPtc(HubConnection):
 
     def get_target_data_df(self) -> pl.DataFrame:
         """
-        Loads the target data file from the hub repo.
-        Supports both CSV and parquet formats. File path
-        for target data is hard coded to 'target-data'.
-        Raises FileNotFoundError if target data file does
-        not exist.
+        Loads the target data file from the hub repo. 
+        Uses hubdata.connect_target_data() for standard 
+        target data locations (time-series.csv, 
+        time-series.parquet, or time-series/ directory). 
+        Falls back to custom file reading when 
+        target_data_file_name is specified in the 
+        predtimechart config.
+
+        :return: target data as a polars DataFrame
+        :raises FileNotFoundError: if target data file does 
+                not exist
+        :raises ValueError: if target data file has 
+                            unsupported format (custom file only)
         """
-        target_data_file_path = self.hub_path / 'target-data' / self.get_target_data_file_name()
+        # use hubdata.connect_target_data() for standard file locations
+        if not self.target_data_file_name:
+            try:
+                target_conn = connect_target_data(self.hub_path, TargetType.TIME_SERIES)
+                return pl.from_arrow(target_conn.to_table())
+            except RuntimeError as error:
+                raise FileNotFoundError(f"target data not found via hubdata. {error=}")
+
+        # fallback for custom file name specified in config
+        target_data_file_path = self.hub_path / "target-data" / self.target_data_file_name
         try:
-            # the override schema handles the 'US' location (the only location
-            # that doesn't parse as Int64)
-            # todo hard-coded column names
-            if target_data_file_path.suffix == '.csv':
+            if target_data_file_path.suffix == ".csv":
                 return pl.read_csv(
                     target_data_file_path,
                     schema_overrides={
-                        'location': pl.String,
-                        'value': pl.Float64,
-                        'observation': pl.Float64},
-                    null_values=["NA"]
+                        "location": pl.String,
+                        "value": pl.Float64,
+                        "observation": pl.Float64,
+                    },
+                    null_values=["NA"],
                 )
-            elif target_data_file_path.suffix == '.parquet':
+            elif target_data_file_path.suffix == ".parquet":
                 return pl.read_parquet(target_data_file_path)
             else:
                 raise ValueError(
