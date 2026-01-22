@@ -117,26 +117,50 @@ class HubConfigPtc(HubConnection):
 
     def get_target_data_df(self) -> pl.DataFrame:
         """
-        Loads the target data csv file from the hub repo for now, file path for target data is hard coded to 'target-data'.
-        Raises FileNotFoundError if target data file does not exist.
+        Loads the target data file from the hub repo.
+        Supports both CSV and parquet formats. File path
+        for target data is hard coded to 'target-data'.
+        Raises FileNotFoundError if target data file does
+        not exist.
         """
         target_data_file_path = self.hub_path / 'target-data' / self.get_target_data_file_name()
         try:
-            # the override schema handles the 'US' location (the only location that doesn't parse as Int64)
+            # the override schema handles the 'US' location (the only location
+            # that doesn't parse as Int64)
             # todo hard-coded column names
-            return pl.read_csv(target_data_file_path, schema_overrides={'location': pl.String,
-                                                                        'value': pl.Float64,
-                                                                        'observation': pl.Float64},
-                               null_values=["NA"])
+            if target_data_file_path.suffix == '.csv':
+                return pl.read_csv(
+                    target_data_file_path,
+                    schema_overrides={
+                        'location': pl.String,
+                        'value': pl.Float64,
+                        'observation': pl.Float64},
+                    null_values=["NA"]
+                )
+            elif target_data_file_path.suffix == '.parquet':
+                return pl.read_parquet(target_data_file_path)
+            else:
+                raise ValueError(
+                    f"Unsupported target data file format: {target_data_file_path.suffix}. "
+                    f"Only .csv and .parquet are supported."
+                )
         except FileNotFoundError as error:
             raise FileNotFoundError(f"target data file not found. {target_data_file_path=}, {error=}")
 
 
     def get_target_data_file_name(self):
         """
-        :return: the target data file name under the "target-data" dir to use
+        :return: the target data file name under the "target-data" dir to use.
+                 If not specified in config, defaults to 'time-series.csv' if
+                 it exists, otherwise falls back to 'time-series.parquet'.
         """
-        return self.target_data_file_name if self.target_data_file_name else 'time-series.csv'
+        if self.target_data_file_name:
+            return self.target_data_file_name
+        # prefer csv over parquet
+        csv_path = self.hub_path / 'target-data' / 'time-series.csv'
+        if csv_path.exists():
+            return 'time-series.csv'
+        return 'time-series.parquet'
 
 
 def _validate_predtimechart_config(ptc_config: dict, tasks: dict):
