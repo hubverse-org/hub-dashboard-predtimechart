@@ -148,7 +148,9 @@ class HubConfigPtc(HubConnection):
                 f"Unsupported target data file format: {target_data_file_path.suffix}. "
                 f"Only .csv and .parquet are supported."
             )
-
+        # the override schema handles the 'US' location (the only location 
+        # that doesn't parse as Int64)
+        # todo hard-coded column names
         try:
             if target_data_file_path.suffix == ".csv":
                 return pl.read_csv(
