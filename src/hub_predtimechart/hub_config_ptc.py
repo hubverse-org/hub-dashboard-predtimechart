@@ -127,21 +127,28 @@ class HubConfigPtc(HubConnection):
         predtimechart config.
 
         :return: target data as a polars DataFrame
-        :raises FileNotFoundError: if target data file does 
-                not exist
-        :raises ValueError: if target data file has 
-                            unsupported format (custom file only)
+        :raises RuntimeError: if hubdata fails to retrieve target data
+        :raises FileNotFoundError: if target data file does not exist
+        :raises ValueError: if target data file has unsupported format
         """
         # use hubdata.connect_target_data() for standard file locations
         if not self.target_data_file_name:
             try:
                 target_conn = connect_target_data(self.hub_path, TargetType.TIME_SERIES)
                 return pl.from_arrow(target_conn.to_table())
-            except RuntimeError as error:
-                raise FileNotFoundError(f"target data not found via hubdata. {error=}")
+            except Exception as error:
+                raise RuntimeError(f"failed to retrieve target data via hubdata. {error=}")
 
         # fallback for custom file name specified in config
         target_data_file_path = self.hub_path / "target-data" / self.target_data_file_name
+
+        # check extension before attempting to read
+        if target_data_file_path.suffix not in (".csv", ".parquet"):
+            raise ValueError(
+                f"Unsupported target data file format: {target_data_file_path.suffix}. "
+                f"Only .csv and .parquet are supported."
+            )
+
         try:
             if target_data_file_path.suffix == ".csv":
                 return pl.read_csv(
@@ -153,30 +160,17 @@ class HubConfigPtc(HubConnection):
                     },
                     null_values=["NA"],
                 )
-            elif target_data_file_path.suffix == ".parquet":
-                return pl.read_parquet(target_data_file_path)
             else:
-                raise ValueError(
-                    f"Unsupported target data file format: {target_data_file_path.suffix}. "
-                    f"Only .csv and .parquet are supported."
-                )
+                return pl.read_parquet(target_data_file_path)
         except FileNotFoundError as error:
             raise FileNotFoundError(f"target data file not found. {target_data_file_path=}, {error=}")
 
 
     def get_target_data_file_name(self):
         """
-        :return: the target data file name under the "target-data" dir to use.
-                 If not specified in config, defaults to 'time-series.csv' if
-                 it exists, otherwise falls back to 'time-series.parquet'.
+        :return: the target data file name under the "target-data" dir to use
         """
-        if self.target_data_file_name:
-            return self.target_data_file_name
-        # prefer csv over parquet
-        csv_path = self.hub_path / 'target-data' / 'time-series.csv'
-        if csv_path.exists():
-            return 'time-series.csv'
-        return 'time-series.parquet'
+        return self.target_data_file_name if self.target_data_file_name else 'time-series.csv'
 
 
 def _validate_predtimechart_config(ptc_config: dict, tasks: dict):
