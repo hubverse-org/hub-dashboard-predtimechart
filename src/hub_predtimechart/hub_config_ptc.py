@@ -8,6 +8,7 @@ import pandas as pd
 import polars as pl
 import yaml
 from hubdata import HubConnection
+from hubdata.connect_target_data import TargetType, connect_target_data
 from jsonschema import FormatChecker, ValidationError, validate
 
 from hub_predtimechart.ptc_schema import ptc_config_schema
@@ -117,10 +118,24 @@ class HubConfigPtc(HubConnection):
 
     def get_target_data_df(self) -> pl.DataFrame:
         """
-        Loads the target data csv file from the hub repo for now, file path for target data is hard coded to 'target-data'.
-        Raises FileNotFoundError if target data file does not exist.
+        Loads the target data file from the hub repo. Uses `hubdata.connect_target_data()` for standard target data
+        locations (time-series.csv, time-series.parquet, or time-series/ directory). Falls back to custom file reading
+        when `target_data_file_name` is specified in the predtimechart config.
+
+        :return: target data as a polars DataFrame
+        :raises FileNotFoundError: if target data file does not exist
+        :raises ValueError: if target data file has unsupported format (custom file only)
         """
-        target_data_file_path = self.hub_path / 'target-data' / self.get_target_data_file_name()
+        # non-custom file name case: use `hubdata.connect_target_data()` for standard file locations
+        if not self.target_data_file_name:
+            try:
+                target_conn = connect_target_data(self.hub_path, TargetType.TIME_SERIES)
+                return pl.from_arrow(target_conn.to_table())
+            except RuntimeError as error:
+                raise FileNotFoundError(f"target data not found via hubdata. {error=}")
+
+        # custom file name case
+        target_data_file_path = self.hub_path / 'target-data' / self.target_data_file_name
         try:
             # the override schema handles the 'US' location (the only location that doesn't parse as Int64)
             # todo hard-coded column names
@@ -130,13 +145,6 @@ class HubConfigPtc(HubConnection):
                                null_values=["NA"])
         except FileNotFoundError as error:
             raise FileNotFoundError(f"target data file not found. {target_data_file_path=}, {error=}")
-
-
-    def get_target_data_file_name(self):
-        """
-        :return: the target data file name under the "target-data" dir to use
-        """
-        return self.target_data_file_name if self.target_data_file_name else 'time-series.csv'
 
 
 def _validate_predtimechart_config(ptc_config: dict, tasks: dict):
