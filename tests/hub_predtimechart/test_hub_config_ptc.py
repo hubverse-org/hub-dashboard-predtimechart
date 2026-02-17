@@ -215,23 +215,6 @@ def test_task_id_text_covid19_forecast_hub():
     }
 
 
-def test_get_target_data_file_name():
-    # hub that predates the new target data standard file name. specifies file name in hub_config.target_data_file_name
-    hub_path = Path('tests/hubs/covid19-forecast-hub')
-    hub_config = HubConfigPtc(hub_path, hub_path / 'hub-config/predtimechart-config.yml')
-    assert hub_config.get_target_data_file_name() == 'covid-hospital-admissions.csv'
-
-    # hub that predates the new target data standard file name. specifies file name in hub_config.target_data_file_name
-    hub_path = Path('tests/hubs/FluSight-forecast-hub')
-    hub_config = HubConfigPtc(hub_path, hub_path / 'hub-config/predtimechart-config.yml')
-    assert hub_config.get_target_data_file_name() == 'target-hospital-admissions.csv'
-
-    # hub that uses the new target data standard file name: "target-data/time-series.csv"
-    hub_path = Path('tests/hubs/flu-metrocast')
-    hub_config = HubConfigPtc(hub_path, hub_path / 'hub-config/predtimechart-config.yml')
-    assert hub_config.get_target_data_file_name() == 'time-series.csv'
-
-
 def test_model_tasks_instance_list():
     for hub_path, exp_len in [('tests/hubs/covid19-forecast-hub', 1),
                              ('tests/hubs/example-complex-forecast-hub', 1),

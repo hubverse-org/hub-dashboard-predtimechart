@@ -51,7 +51,7 @@ def main(hub_dir, ptc_config_file, target_out_dir, regenerate):
     try:
         target_data_df = hub_config.get_target_data_df()
     except FileNotFoundError as error:
-        logger.error(f"target data file not found. {hub_config.get_target_data_file_name()=}, {error=}")
+        logger.error(f"target data file not found. {error=}")
         sys.exit(1)
 
     json_files = _generate_target_json_files(hub_config, target_data_df, target_out_dir, regenerate)
@@ -131,7 +131,7 @@ def ptc_target_data(model_task: ModelTask, target_data_df: pl.DataFrame, task_id
         if max_as_of is None:
             return None
         else:
-            target_data_df = target_data_df.filter(pl.col('as_of') == max_as_of.isoformat())
+            target_data_df = target_data_df.filter(pl.col('as_of') == max_as_of)
     else:
         # the file is one that is assumed to be updated weekly and so we can
         # assume that the effective as_of date for this file is the same as
@@ -158,30 +158,30 @@ def ptc_target_data(model_task: ModelTask, target_data_df: pl.DataFrame, task_id
     if len(target_data_df) == 0:
         return None
 
+    # date column type depends on data source: date objects from `connect_target_data()`, strings from custom CSV files.
+    # convert date objects to ISO strings for JSON serialization; pass through strings as-is.
     return {
-        'date': target_data_df[target_date_col_name].to_list(),
+        'date': [d.isoformat() if isinstance(d, date) else d for d in target_data_df[target_date_col_name].to_list()],
         'y': target_data_df[observation_col_name].to_list()
     }
 
 
-def _max_as_of_le_reference_date(target_data_df: pl.DataFrame, viz_target_id: str, reference_date: str) -> date:
+def _max_as_of_le_reference_date(target_data_df: pl.DataFrame, viz_target_id: str, reference_date: str) -> date | None:
     """
     ptc_target_data() helper
 
-    :param target_data_df: a pl.DataFrame that loaded from HubConfigPtc.target_data_file_name. assumes follows our new
+    :param target_data_df: a pl.DataFrame from connect_target_data(). assumes follows the
         time-series target data standard - has `as_of` column, etc.
     :param viz_target_id: the target of interest. via ModelTask.viz_target_id
     :param reference_date: string naming the reference_date of interest
     :return: max as_of that's <= `reference_date` for `viz_target_id`. return None if not found
     """
     reference_date = date.fromisoformat(reference_date)
-    unique_as_ofs = [date.fromisoformat(as_of) for as_of in pl.Series(target_data_df
-                                                                      .filter(pl.col('target') == viz_target_id)
-                                                                      .unique('as_of')
-                                                                      .select('as_of')
-                                                                      .sort('as_of'))]  # sort for debugging
-    le_as_ofs = [as_of for as_of in unique_as_ofs if as_of <= reference_date]
-    return max(le_as_ofs) if le_as_ofs else None
+    return (target_data_df
+            .filter(pl.col('target') == viz_target_id)
+            .filter(pl.col('as_of') <= reference_date)
+            .select(pl.col('as_of').max())
+            .item())
 
 
 #
