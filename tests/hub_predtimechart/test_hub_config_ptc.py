@@ -7,7 +7,7 @@ import pytest
 import yaml
 from jsonschema.exceptions import ValidationError
 
-from hub_predtimechart.hub_config_ptc import HubConfigPtc, _validate_hub_ptc_compatibility, \
+from hub_predtimechart.hub_config_ptc import HubConfigPtc, _valid_targets, _validate_hub_ptc_compatibility, \
     _validate_predtimechart_config, ModelTask
 
 
@@ -173,17 +173,23 @@ def test__validate_hub_ptc_compatibility():
     with pytest.raises(ValidationError, match="'designated_model' not found in model metadata schema"):
         _validate_hub_ptc_compatibility(hub_config)
 
-    # case: must be exactly one `target_metadata` entry
-    hub_config = HubConfigPtc(hub_path, hub_path / 'hub-config/predtimechart-config.yml')
-    target_metadata_list = hub_config.model_tasks[0].task['target_metadata']
-    target_metadata_list.append(target_metadata_list[0])
-    with pytest.raises(ValidationError, match="not exactly one target_metadata object"):
-        _validate_hub_ptc_compatibility(hub_config)
-
-    # case: only one entry under `target_metadata` entry's `target_keys`
+    # case: only one entry under `target_metadata` entry's `target_keys` (applied to the first target_metadata entry)
     hub_config = HubConfigPtc(hub_path, hub_path / 'hub-config/predtimechart-config.yml')
     target_keys = hub_config.model_tasks[0].task['target_metadata'][0]['target_keys']
     target_keys['second_target_key'] = 'second_target_key_value'
+    with pytest.raises(ValidationError, match="not exactly one target_metadata target_keys entry"):
+        _validate_hub_ptc_compatibility(hub_config)
+
+    # case: the target_keys length-1 check runs per target_metadata entry, not just [0]. simulate a block with a
+    # second (added) target_metadata entry whose target_keys is invalid, and confirm the check fires on it
+    hub_config = HubConfigPtc(hub_path, hub_path / 'hub-config/predtimechart-config.yml')
+    existing_block = hub_config.model_tasks[0].task
+    existing_block['target_metadata'].append({
+        'target_keys': {'target': 'second', 'extra_key': 'extra_value'},
+        'target_name': 'second target',
+        'is_step_ahead': True,
+    })
+    hub_config.model_tasks.append(ModelTask(hub_config, existing_block, target_metadata_idx=1))
     with pytest.raises(ValidationError, match="not exactly one target_metadata target_keys entry"):
         _validate_hub_ptc_compatibility(hub_config)
 
@@ -261,3 +267,86 @@ def test_hub_path_is_a_path():
     hub_path = Path('tests/hubs/flu-metrocast')
     with pytest.raises(TypeError, match='hub_path was not a Path'):
         HubConfigPtc(str(hub_path.absolute()), hub_path / 'hub-config/predtimechart-config.yml')
+
+
+def test__valid_targets_composite():
+    # handcrafted round exercising all filter rules in one place:
+    # - block A (quantile) with 3 target_metadata entries, only idx 0 and 2 are is_step_ahead
+    # - block B (pmf) is non-quantile, fully skipped
+    # - block C (quantile) with 1 step-ahead target
+    # expected yields: (block_a, 0), (block_a, 2), (block_c, 0)
+    block_a = {
+        'task_ids': {},
+        'output_type': {'quantile': {}},
+        'target_metadata': [
+            {'target_id': 'a0', 'is_step_ahead': True},
+            {'target_id': 'a1', 'is_step_ahead': False},
+            {'target_id': 'a2', 'is_step_ahead': True},
+        ],
+    }
+    block_b = {
+        'task_ids': {},
+        'output_type': {'pmf': {}},
+        'target_metadata': [{'target_id': 'b0', 'is_step_ahead': True}],
+    }
+    block_c = {
+        'task_ids': {},
+        'output_type': {'quantile': {}},
+        'target_metadata': [{'target_id': 'c0', 'is_step_ahead': True}],
+    }
+    the_round = {'model_tasks': [block_a, block_b, block_c]}
+
+    pairs = list(_valid_targets(the_round))
+    assert pairs == [(block_a, 0), (block_a, 2), (block_c, 0)]
+
+
+def test__valid_targets_cdc_scenario_2():
+    # regression test for the real-world configuration from CDC's covid19-forecast-hub that surfaced
+    # hubverse-org/hub-dashboard-predtimechart#88: one model_tasks block with two step-ahead quantile targets
+    with open('tests/fixtures/cdc-multi-target-tasks.json') as fp:
+        tasks = json.load(fp)
+    the_round = tasks['rounds'][0]
+
+    pairs = list(_valid_targets(the_round))
+    assert len(pairs) == 2
+    block, idx0 = pairs[0]
+    _, idx1 = pairs[1]
+    assert (idx0, idx1) == (0, 1)
+    assert block is the_round['model_tasks'][0]  # both targets from the same block
+    assert block['target_metadata'][idx0]['target_id'] == 'wk inc covid hosp'
+    assert block['target_metadata'][idx1]['target_id'] == 'wk inc covid prop ed visits'
+
+
+def test_model_task_target_metadata_idx():
+    # verify `target_metadata_idx` plumbing: constructing a ModelTask with idx=1 reads target_metadata[1],
+    # not [0]. uses a minimal stub for hub_config_ptc (ModelTask.__post_init__ only reads three col-name attrs)
+    class StubHubConfig:
+        reference_date_col_name = 'reference_date'
+        target_date_col_name = 'target_end_date'
+        horizon_col_name = 'horizon'
+
+    task = {
+        'task_ids': {
+            'reference_date': {'required': ['2025-01-01'], 'optional': None},
+            'target_end_date': {'required': ['2025-01-01', '2025-01-08'], 'optional': None},
+            'horizon': {'required': [0, 1], 'optional': None},
+            'target': {'required': ['first', 'second'], 'optional': None},
+            'location': {'required': ['US'], 'optional': None},
+        },
+        'target_metadata': [
+            {'target_name': 'first target', 'target_keys': {'target': 'first'}, 'is_step_ahead': True},
+            {'target_name': 'second target', 'target_keys': {'target': 'second'}, 'is_step_ahead': True},
+        ],
+    }
+
+    mt_1 = ModelTask(StubHubConfig(), task, target_metadata_idx=1)
+    assert mt_1.target_metadata_idx == 1
+    assert mt_1.viz_target_id == 'second'
+    assert mt_1.viz_target_name == 'second target'
+    assert mt_1.viz_target_col_name == 'target'
+
+    # also confirm default idx=0 behavior is unchanged
+    mt_0 = ModelTask(StubHubConfig(), task)
+    assert mt_0.target_metadata_idx == 0
+    assert mt_0.viz_target_id == 'first'
+    assert mt_0.viz_target_name == 'first target'
