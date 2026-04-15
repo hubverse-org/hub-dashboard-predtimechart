@@ -40,8 +40,10 @@ class HubConfigPtc(HubConnection):
         "target-data" dir. use the function HubConfigPtc.get_target_data_file_name() to access the actual file name
     - model_id_to_metadata: maps model_ids (team_abbr + model_abbr) to metadata as loaded from files in the hub's
         'model-metadata' dir. functions both as a map to metadata and as an iterable of model_ids (keys)
-    - model_tasks: a list of ModelTask instances that are applicable to predtimechart viz, i.e., is_step_ahead is true
-        and 'quantile' is in output_type
+    - model_tasks: a list of ModelTask instances, one per predtimechart-compatible *target* (is_step_ahead is true and
+        the surrounding model_tasks block has 'quantile' in output_type). The target, not the model_tasks block, is the
+        unit of iteration downstream: options, data files, and available_as_ofs are all keyed by `viz_target_id`. A
+        single model_tasks block with N compatible target_metadata entries therefore yields N ModelTask instances.
     """
 
 
@@ -91,8 +93,9 @@ class HubConfigPtc(HubConnection):
                 model_id = f"{model_metadata['team_abbr']}-{model_metadata['model_abbr']}"
                 self.model_id_to_metadata[model_id] = model_metadata
 
-        # set model_tasks: one ModelTask per (model_tasks block, target_metadata entry) pair that is predtimechart-
-        # compatible. see `_valid_targets()` for the compatibility rules.
+        # set model_tasks: one ModelTask per predtimechart-compatible target. a single model_tasks block can contribute
+        # multiple targets (one per qualifying target_metadata entry), so len(model_tasks) >= len(round['model_tasks']).
+        # see `_valid_targets()` for the compatibility rules.
         the_round = self.tasks['rounds'][self.rounds_idx]
         self.model_tasks = [ModelTask(self, model_task, tm_idx)
                             for model_task, tm_idx in _valid_targets(the_round)]
@@ -245,9 +248,11 @@ def _validate_hub_ptc_compatibility(hub_config_ptc: HubConfigPtc):
 @dataclass
 class ModelTask:
     """
-    A HubConfigPtc helper class that represents a single (model_tasks block, target_metadata entry) pair. A given
-    tasks.json "model_tasks" block may produce multiple ModelTask instances if its `target_metadata` list has more
-    than one predtimechart-compatible entry.
+    A HubConfigPtc helper class representing one predtimechart *target* (the unit of iteration downstream: one per
+    entry in options `target_variables`, one per forecast data file prefix, etc.). Internally it is a view onto a
+    specific (`tasks.json` "model_tasks" block, `target_metadata` entry) pair, addressed by `target_metadata_idx`.
+    When a model_tasks block has multiple predtimechart-compatible target_metadata entries, each yields its own
+    ModelTask instance.
 
     Instance variables:
     - hub_config_ptc: the HubConfigPtc creating this instance
