@@ -40,8 +40,10 @@ class HubConfigPtc(HubConnection):
         "target-data" dir. use the function HubConfigPtc.get_target_data_file_name() to access the actual file name
     - model_id_to_metadata: maps model_ids (team_abbr + model_abbr) to metadata as loaded from files in the hub's
         'model-metadata' dir. functions both as a map to metadata and as an iterable of model_ids (keys)
-    - model_tasks: a list of ModelTask instances that are applicable to predtimechart viz, i.e., is_step_ahead is true
-        and 'quantile' is in output_type
+    - model_tasks: a list of ModelTask instances, one per predtimechart-compatible *target* (is_step_ahead is true and
+        the surrounding model_tasks block has 'quantile' in output_type). The target, not the model_tasks block, is the
+        unit of iteration downstream: options, data files, and available_as_ofs are all keyed by `viz_target_id`. A
+        single model_tasks block with N compatible target_metadata entries therefore yields N ModelTask instances.
     """
 
 
@@ -91,11 +93,12 @@ class HubConfigPtc(HubConnection):
                 model_id = f"{model_metadata['team_abbr']}-{model_metadata['model_abbr']}"
                 self.model_id_to_metadata[model_id] = model_metadata
 
-        # set model_tasks. recall we support only one entry in target_metadata
-        self.model_tasks = [ModelTask(self, model_task)
-                            for model_task in self.tasks['rounds'][self.rounds_idx]['model_tasks']
-                            if ('quantile' in model_task['output_type'])
-                            and (model_task['target_metadata'][0]['is_step_ahead'])]
+        # set model_tasks: one ModelTask per predtimechart-compatible target. a single model_tasks block can contribute
+        # multiple targets (one per qualifying target_metadata entry), so len(model_tasks) >= len(round['model_tasks']).
+        # see `_valid_targets()` for the compatibility rules.
+        the_round = self.tasks['rounds'][self.rounds_idx]
+        self.model_tasks = [ModelTask(self, model_task, tm_idx)
+                            for model_task, tm_idx in _valid_targets(the_round)]
 
         # validate hub predtimechart compatibility. must be done after `_validate_predtimechart_config()`. also, we do
         # it here after I've finished initializing for convenience
@@ -145,6 +148,27 @@ class HubConfigPtc(HubConnection):
                                null_values=["NA"])
         except FileNotFoundError as error:
             raise FileNotFoundError(f"target data file not found. {target_data_file_path=}, {error=}")
+
+
+def _valid_targets(the_round: dict):
+    """
+    Yields `(model_task, target_metadata_idx)` pairs for every target in `the_round` that is compatible with
+    predtimechart viz. A target is compatible when:
+
+    - its surrounding `model_tasks` block has a `quantile` output_type, AND
+    - the `target_metadata` entry has `is_step_ahead` = True.
+
+    Each yielded pair produces one `ModelTask` instance in `HubConfigPtc.model_tasks`. Note that a single
+    `model_tasks` block may contribute multiple targets (one per qualifying `target_metadata` entry).
+
+    :param the_round: a single round dict from `tasks.json > rounds`
+    """
+    for model_task in the_round['model_tasks']:
+        if 'quantile' not in model_task['output_type']:
+            continue
+        for tm_idx, target_metadata in enumerate(model_task['target_metadata']):
+            if target_metadata['is_step_ahead']:
+                yield model_task, tm_idx
 
 
 def _validate_predtimechart_config(ptc_config: dict, tasks: dict):
@@ -209,11 +233,10 @@ def _validate_hub_ptc_compatibility(hub_config_ptc: HubConfigPtc):
             raise ValidationError(f"some quantile output_type_ids are missing. required={req_quantile_levels}, "
                                   f"found={set(quantile_levels)}")
 
-        # validate: must be exactly one `target_metadata` entry, and only one entry under its `target_keys`
-        if len(model_task.task['target_metadata']) != 1:
-            raise ValidationError(f"not exactly one target_metadata object: {len(model_task.task['target_metadata'])}")
-
-        target_metadata_target_keys = model_task.task['target_metadata'][0]['target_keys']
+        # validate: only one entry under `target_keys` for this ModelTask's target (i.e. a single target column).
+        # consistency of the target_keys column *name* across target_metadata entries within a block is enforced
+        # upstream by hubAdmin (`val_target_key_names_const`), so we don't re-check it here
+        target_metadata_target_keys = model_task.task['target_metadata'][model_task.target_metadata_idx]['target_keys']
         if len(target_metadata_target_keys) != 1:
             raise ValidationError(f"not exactly one target_metadata target_keys entry: {target_metadata_target_keys}")
 
@@ -225,12 +248,17 @@ def _validate_hub_ptc_compatibility(hub_config_ptc: HubConfigPtc):
 @dataclass
 class ModelTask:
     """
-    A HubConfigPtc helper class that represents a tasks.json "model_tasks" entry under a round.
+    A HubConfigPtc helper class representing one predtimechart *target* (the unit of iteration downstream: one per
+    entry in options `target_variables`, one per forecast data file prefix, etc.). Internally it is a view onto a
+    specific (`tasks.json` "model_tasks" block, `target_metadata` entry) pair, addressed by `target_metadata_idx`.
+    When a model_tasks block has multiple predtimechart-compatible target_metadata entries, each yields its own
+    ModelTask instance.
 
     Instance variables:
     - hub_config_ptc: the HubConfigPtc creating this instance
     - task: a "model_tasks" entry as loaded from tasks.json. has three keys per the hubverse standard: 'task_ids',
         'output_type', and 'target_metadata'
+    - target_metadata_idx: index into `task['target_metadata']` identifying which target this ModelTask represents
     - viz_target_id: target_metadata.target_keys[0].value
     - viz_target_name: target_metadata.target_name
     - viz_target_col_name: target_metadata.target_keys[0].key
@@ -243,6 +271,7 @@ class ModelTask:
     """
     hub_config_ptc: HubConfigPtc = field(repr=False)
     task: dict = field(repr=False)
+    target_metadata_idx: int = field(default=0, repr=False)
     viz_target_id: str = field(init=False, repr=False)
     viz_target_name: str = field(init=False, repr=False)
     viz_target_col_name: str = field(init=False, repr=False)
@@ -253,8 +282,10 @@ class ModelTask:
 
 
     def __post_init__(self):
-        # recall: we require exactly one `target_metadata` entry, and only one entry under its `target_keys`
-        target_metadata = self.task['target_metadata'][0]
+        # recall: we require only one entry under `target_keys` (enforced upstream by hubAdmin and by
+        # _validate_hub_ptc_compatibility); multiple `target_metadata` entries are allowed, with each producing its
+        # own ModelTask identified by `target_metadata_idx`
+        target_metadata = self.task['target_metadata'][self.target_metadata_idx]
         self.viz_target_id = list(target_metadata['target_keys'].values())[0]
         self.viz_target_name = target_metadata['target_name']
         self.viz_target_col_name = list(target_metadata['target_keys'].keys())[0]

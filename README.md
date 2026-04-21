@@ -46,7 +46,8 @@ Initially the visualization will have these limitations:
 - The following quantile levels (`output_type_id`s) are present in the data: 0.025, 0.25, 0.5, 0.75, 0.975
 - The hub has `reference_date`|`origin_date` and `target_date`|`target_end_date` task IDs in `tasks.json > rounds > model_tasks > task_ids`.
 - Model metadata must contain a boolean `designated_model` field.
-- The `target_metadata` list in the specified `model_tasks` object within the specified `rounds` object must contain exactly one object, which must have a single key in the `target_keys` object.
+- The *target* is the unit of visualization: each qualifying `target_metadata` entry produces one visualization target (with its own options entry, data files, and `available_as_ofs`). A `target_metadata` entry qualifies when `is_step_ahead: true` and its surrounding `model_tasks` block has `quantile` in `output_type`. A single `model_tasks` block may therefore contribute multiple visualization targets (one per qualifying `target_metadata` entry).
+- Each `target_metadata` entry in the specified `model_tasks` object must have a single key in its `target_keys` object (a single target column).
 - Only forecast data will be plotted, not target data.
 - We assume all hub files have been validated.
 - For the `task_ids` entry in predtimechart config option generation, we use `value` for both `value` and `text`, rather than asking the user to provide a mapping from `value` to `text`. A solution is to require that mapping in `predtimechart-config.yml`.

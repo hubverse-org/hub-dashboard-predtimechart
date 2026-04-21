@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from hub_predtimechart.generate_options import ptc_options_for_hub, _host_owner_name
-from hub_predtimechart.hub_config_ptc import HubConfigPtc
+from hub_predtimechart.hub_config_ptc import HubConfigPtc, ModelTask
 
 
 def test_generate_options_complex_forecast_hub():
@@ -47,6 +47,31 @@ def test_generate_options_flu_metrocast():
         exp_options = json.load(fp)
     act_options = ptc_options_for_hub(hub_config)
     assert act_options == exp_options
+
+
+def test_generate_options_multi_target_per_block():
+    # regression for #88: when a single model_tasks block carries multiple target_metadata entries,
+    # `target_variables` must contain one distinct entry per target (not the same entry repeated). simulate this
+    # by loading a single-target hub and appending a second target_metadata entry plus a matching ModelTask with
+    # target_metadata_idx=1, mirroring what HubConfigPtc builds for multi-target-per-block hubs
+    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    existing_block = hub_config.model_tasks[0].task
+    existing_block['target_metadata'].append({
+        'target_keys': {'target': 'second_target'},
+        'target_name': 'second target readable name',
+        'is_step_ahead': True,
+    })
+    hub_config.model_tasks.append(ModelTask(hub_config, existing_block, target_metadata_idx=1))
+
+    options = ptc_options_for_hub(hub_config)
+    target_values = [tv['value'] for tv in options['target_variables']]
+    target_texts = [tv['text'] for tv in options['target_variables']]
+    assert target_values == ['wk inc flu hosp', 'second_target']
+    assert target_texts == ['incident influenza hospitalizations', 'second target readable name']
+    # downstream keys must line up with target_variables
+    assert set(options['available_as_ofs'].keys()) == set(target_values)
+    assert set(options['task_ids'].keys()) == set(target_values)
 
 
 def test_generate_options_task_id_text_covid19_forecast_hub():

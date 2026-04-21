@@ -28,17 +28,14 @@ def ptc_options_for_hub(hub_config: HubConfigPtc):
             return max(reference_dates)
 
 
-    # set `target_variables` and `initial_target_var`. recall: we require exactly one `target_metadata` entry, and only
-    # one entry under its `target_keys`
+    # set `target_variables` and `initial_target_var`. one entry per ModelTask, using the ModelTask's own viz_*
+    # fields (already resolved from the correct target_metadata_idx)
     options = {}
     options['target_variables'] = []
     for model_task in hub_config.model_tasks:
-        target_metadata = model_task.task['target_metadata'][0]
-        target_name = target_metadata['target_name']  # ex: "Percentage of ED visits due to influenza"
-        target_key_value = list(target_metadata['target_keys'].values())[0]  # ex: "Flu ED visits pct"
-        options['target_variables'].append({'value': target_key_value,
-                                            'text': target_name,
-                                            'plot_text': target_name})
+        options['target_variables'].append({'value': model_task.viz_target_id,
+                                            'text': model_task.viz_target_name,
+                                            'plot_text': model_task.viz_target_name})
     options['initial_target_var'] = options['target_variables'][0]['value']  # arbitrary choice
 
     # set `task_ids` and `initial_task_ids`
