@@ -3,6 +3,14 @@ from collections import defaultdict
 import pandas as pd
 
 from hub_predtimechart.hub_config_ptc import HubConfigPtc
+from hub_predtimechart.intervals import INTERVAL_TO_QUANTILE_LEVELS, quantile_levels_for_intervals
+
+
+# the quantile levels we extract, as both numbers and strings b/c we can't depend on the output_type_id being one or the
+# other. NB: we extract the levels for *all* intervals, not just the ones a given hub can plot - it's
+# `ptc_options_for_hub()` that decides which intervals are offered
+_QUANTILE_LEVELS = sorted(quantile_levels_for_intervals(INTERVAL_TO_QUANTILE_LEVELS))
+QUANTILE_LEVELS = tuple(_QUANTILE_LEVELS) + tuple(str(level) for level in _QUANTILE_LEVELS)
 
 
 def forecast_data_for_model_df(hub_config: HubConfigPtc, model_df: pd.DataFrame, target: str,
@@ -15,14 +23,17 @@ def forecast_data_for_model_df(hub_config: HubConfigPtc, model_df: pd.DataFrame,
     {
         "target_end_date": ["2022-10-22", "2022-10-29"],
         "q0.025": [1114, 882],
+        "q0.1": [1329, 1183],
         "q0.25": [1542, 1443],
         "q0.5": [1724, 1724],
         "q0.75": [1906, 2006],
+        "q0.9": [2119, 2266],
         "q0.975": [2334, 2562]
     }
 
     This means it's up to the caller to assemble outputs from individual models to form the final output that's saved to
-    a JSON file.
+    a JSON file. Note that only the quantile levels the model actually submitted are included, so a model that didn't
+    submit, say, 0.1 and 0.9 has no "q0.1"/"q0.9" keys (predtimechart then plots no 80% interval for it).
     """
     # get the ModelTask corresponding to target. raise RuntimeError if not exactly one found
     model_tasks_for_target = [model_task for model_task in hub_config.model_tasks if model_task.viz_target_id == target]
@@ -42,9 +53,7 @@ def forecast_data_for_model_df(hub_config: HubConfigPtc, model_df: pd.DataFrame,
 
     model_df = model_df.query("output_type == 'quantile'")
 
-    # note that we include both strings and numbers b/c we can't depend on the output_type_id being one or the other
-    quantile_levels = (0.025, 0.25, 0.5, 0.75, 0.975, '0.025', '0.25', '0.5', '0.75', '0.975')
-    model_df = model_df.query(f"output_type_id in {quantile_levels}")
+    model_df = model_df.query(f"output_type_id in {QUANTILE_LEVELS}")
 
     # groupby target_end_date
     forecasts = defaultdict(list)

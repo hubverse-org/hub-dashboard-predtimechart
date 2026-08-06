@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from hub_predtimechart.hub_config_ptc import HubConfigPtc
+from hub_predtimechart.intervals import INTERVAL_TO_QUANTILE_LEVELS, REQUIRED_INTERVALS
 
 
 def ptc_options_for_hub(hub_config: HubConfigPtc):
@@ -50,8 +51,12 @@ def ptc_options_for_hub(hub_config: HubConfigPtc):
                                    for task_id, task_values
                                    in options['task_ids'][options['initial_target_var']].items()}
 
-    # set `intervals` and `initial_interval`
-    options['intervals'] = ["0%", "50%", "95%"]
+    # set `intervals` and `initial_interval`. optional intervals (e.g., "80%") are offered only when every target's
+    # model_tasks block requires the quantile levels that back them - otherwise selecting the interval would plot
+    # nothing. NB: `intervals` is a single hub-wide list, hence the intersection across model_tasks
+    hub_quantile_levels = set.intersection(*[model_task.quantile_levels for model_task in hub_config.model_tasks])
+    options['intervals'] = [interval for interval, quantile_levels in INTERVAL_TO_QUANTILE_LEVELS.items()
+                            if interval in REQUIRED_INTERVALS or set(quantile_levels) <= hub_quantile_levels]
     options['initial_interval'] = options['intervals'][-1]
 
     # set `available_as_ofs`, `initial_as_of`, and `current_date`
