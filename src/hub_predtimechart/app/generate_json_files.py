@@ -71,10 +71,9 @@ def _generate_forecast_json_files(hub_config: HubConfigPtc, output_dir: Path, is
     :param output_dir: ""
     :param is_regenerate: boolean indicator for a complete rebuild of the data regardless of whether the files exist.
     """
-    # for each ModelTask in hub_config, loop over every (reference_date X model_id) combination. the nested order of
-    # reference_date, model_id ensures we open each model_output file only once. the tradeoff is that all model_output
-    # files for a particular reference_date are loaded into memory, but that should be reasonable given the number of
-    # teams a hub might have and the size of their model_output files
+    # for each ModelTask in hub_config, loop over every (reference_date X model_id) combination.
+    # the tradeoff is that all model_output files for a particular reference_date are loaded into memory,
+    # but that should be reasonable given the number of teams a hub might have and the size of their model_output files
     json_files = []  # list of files actually generated
     for model_task in hub_config.model_tasks:
         available_ref_dates = model_task.get_available_ref_dates()
@@ -99,7 +98,7 @@ def _generate_forecast_json_files(hub_config: HubConfigPtc, output_dir: Path, is
             if not model_id_to_df:  # no model outputs for reference_date
                 continue
 
-            # iterate over each (target X task_ids) combination (for now we only support one target), outputting to the
+            # iterate over each (target X task_ids) combination, outputting to the
             # corresponding json file
             for task_ids_tuple in model_task.viz_task_ids_tuples:
                 json_file = generate_forecast_json_file(hub_config, model_id_to_df, output_dir,

@@ -42,7 +42,7 @@ The major parts of this project are:
 Initially the visualization will have these limitations:
 
 - Only one round block in `tasks.json > rounds` can be plotted.
-- Only one `model_tasks` group within that round block can be plotted, and only `model_tasks` groups with `quantile` [output_types](https://docs.hubverse.io/en/latest/user-guide/model-output.html#formats-of-model-output) will be considered.
+- Only `model_tasks` groups with `quantile` [output_types](https://docs.hubverse.io/en/latest/user-guide/model-output.html#formats-of-model-output) will be considered.
 - The following quantile levels (`output_type_id`s) are present in the data: 0.025, 0.25, 0.5, 0.75, 0.975
 - The hub has `reference_date`|`origin_date` and `target_date`|`target_end_date` task IDs in `tasks.json > rounds > model_tasks > task_ids`.
 - Model metadata must contain a boolean `designated_model` field.
