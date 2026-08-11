@@ -161,6 +161,14 @@ def test__validate_hub_ptc_compatibility():
             [0.025, 0.25, 0.75, 0.975]  # no 0.5
         _validate_hub_ptc_compatibility(hub_config)
 
+    # case: the quantile levels backing the *optional* 80% interval (0.1 and 0.9) are absent. unlike the required
+    # levels above this must NOT fail validation - such a hub is simply not offered the 80% interval. see
+    # `ptc_options_for_hub()`
+    hub_config = HubConfigPtc(hub_path, hub_path / 'hub-config/predtimechart-config.yml')
+    hub_config.model_tasks[0].task['output_type']['quantile']['output_type_id']['required'] = \
+        [0.025, 0.25, 0.5, 0.75, 0.975]  # no 0.1 or 0.9
+    _validate_hub_ptc_compatibility(hub_config)  # does not raise
+
     # case: model metadata missing (case when hub-config/model-metadata-schema.json was not found)
     hub_config = HubConfigPtc(hub_path, hub_path / 'hub-config/predtimechart-config.yml')
     hub_config.model_metadata_schema = None
@@ -250,6 +258,19 @@ def test_model_task_instance_flu_metrocast():
         '2025-01-25', '2025-02-01', '2025-02-08', '2025-02-15', '2025-02-22', '2025-03-01', '2025-03-08', '2025-03-15',
         '2025-03-22', '2025-03-29', '2025-04-05', '2025-04-12', '2025-04-19', '2025-04-26', '2025-05-03', '2025-05-10',
         '2025-05-17', '2025-05-24', '2025-05-31']
+
+
+def test_model_task_quantile_levels():
+    hub_path = Path('tests/hubs/flu-metrocast')
+    hub_config = HubConfigPtc(hub_path, hub_path / 'hub-config/predtimechart-config.yml')
+    for model_task in hub_config.model_tasks:
+        assert model_task.quantile_levels == {0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975}
+
+    # the property reflects the underlying `tasks.json` block, so a hub missing the optional 0.1/0.9 levels reports
+    # a set without them
+    output_type_id = hub_config.model_tasks[0].task['output_type']['quantile']['output_type_id']
+    output_type_id['required'] = [0.025, 0.25, 0.5, 0.75, 0.975]
+    assert hub_config.model_tasks[0].quantile_levels == {0.025, 0.25, 0.5, 0.75, 0.975}
 
 
 def test_model_task_viz_reference_dates_are_sorted():

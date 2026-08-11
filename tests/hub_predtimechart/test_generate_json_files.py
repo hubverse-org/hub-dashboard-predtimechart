@@ -75,6 +75,42 @@ def test_generate_forecast_json_files_flu_metrocast(tmp_path):
             assert act_data == exp_data
 
 
+def test_generate_forecast_json_files_80_pct_quantiles_ecfh(tmp_path):
+    """
+    An integration test for the 80% interval's backing quantile levels (0.1 and 0.9). example-complex-forecast-hub
+    covers both cases within one hub: its 2022-10-22 and 2022-11-19 model outputs include those levels, while its
+    2022-12-17 ones do not.
+    """
+    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    output_dir = tmp_path
+    _generate_forecast_json_files(hub_config, output_dir)
+
+    # case: the backing quantiles are present
+    with open(output_dir / 'wk-inc-flu-hosp_US_2022-10-22.json') as fp:
+        act_data = json.load(fp)
+    for model_id in ['Flusight-baseline', 'MOBS-GLEAM_FLUH', 'PSI-DICE']:
+        assert 'q0.1' in act_data[model_id]
+        assert 'q0.9' in act_data[model_id]
+
+    # case: no backing quantiles. the files are still generated, just without the 'q0.1'/'q0.9' keys
+    with open(output_dir / 'wk-inc-flu-hosp_US_2022-12-17.json') as fp:
+        act_data = json.load(fp)
+    assert set(act_data.keys()) == {'Flusight-baseline', 'MOBS-GLEAM_FLUH', 'PSI-DICE'}
+    for model_id, model_data in act_data.items():
+        assert 'q0.5' in model_data  # the required levels are unaffected
+        assert 'q0.1' not in model_data
+        assert 'q0.9' not in model_data
+
+    # case: no backing quantiles for one model only (Test-NumericOnly submits just the required levels, while the
+    # other models in the same file submit 0.1/0.9)
+    with open(output_dir / 'wk-inc-flu-hosp_01_2022-10-22.json') as fp:
+        act_data = json.load(fp)
+    assert 'q0.1' in act_data['Flusight-baseline']
+    assert 'q0.1' not in act_data['Test-NumericOnly']
+    assert 'q0.9' not in act_data['Test-NumericOnly']
+
+
 def test_generate_forecast_json_files_skip_files(tmp_path):
     """
     An integration test of `generate_json_files.py`'s `_generate_json_files()`.

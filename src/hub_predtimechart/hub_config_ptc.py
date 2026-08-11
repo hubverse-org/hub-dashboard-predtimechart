@@ -11,6 +11,7 @@ from hubdata import HubConnection
 from hubdata.connect_target_data import TargetType, connect_target_data
 from jsonschema import FormatChecker, ValidationError, validate
 
+from hub_predtimechart.intervals import REQUIRED_INTERVALS, quantile_levels_for_intervals
 from hub_predtimechart.ptc_schema import ptc_config_schema
 
 
@@ -226,12 +227,13 @@ def _validate_hub_ptc_compatibility(hub_config_ptc: HubConfigPtc):
         raise ValidationError(f"not all model_task entries have the same task_ids")
 
     for model_task in hub_config_ptc.model_tasks:
-        # validate: required quantile levels are present
-        quantile_levels = model_task.task['output_type']['quantile']['output_type_id']['required']
-        req_quantile_levels = {0.025, 0.25, 0.5, 0.75, 0.975}
-        if not req_quantile_levels <= set(quantile_levels):  # subset
+        # validate: the quantile levels backing the required intervals are present. levels for optional intervals
+        # (e.g., 0.1 and 0.9 for "80%") are *not* required - hubs lacking them simply aren't offered that interval. see
+        # `ptc_options_for_hub()`
+        req_quantile_levels = quantile_levels_for_intervals(REQUIRED_INTERVALS)
+        if not req_quantile_levels <= model_task.quantile_levels:  # subset
             raise ValidationError(f"some quantile output_type_ids are missing. required={req_quantile_levels}, "
-                                  f"found={set(quantile_levels)}")
+                                  f"found={model_task.quantile_levels}")
 
         # validate: only one entry under `target_keys` for this ModelTask's target (i.e. a single target column).
         # consistency of the target_keys column *name* across target_metadata entries within a block is enforced
@@ -268,6 +270,7 @@ class ModelTask:
         fields
     - viz_task_ids_tuples: the product of all viz task_id values
     - viz_reference_dates: union of required and optional reference_dates from the reference column. sorted by date
+    - quantile_levels: (property) the quantile output_type_ids required by this target's model_tasks block
     """
     hub_config_ptc: HubConfigPtc = field(repr=False)
     task: dict = field(repr=False)
@@ -315,6 +318,15 @@ class ModelTask:
         ref_date_task_id = self.task['task_ids'][self.hub_config_ptc.reference_date_col_name]
         self.viz_reference_dates = sorted((ref_date_task_id['required'] if ref_date_task_id['required'] else []) +
                                           (ref_date_task_id['optional'] if ref_date_task_id['optional'] else []))
+
+
+    @property
+    def quantile_levels(self) -> set[float]:
+        """
+        Returns the quantile `output_type_id`s required by this ModelTask's `model_tasks` block. Used to decide which
+        prediction intervals the hub can plot - see `intervals.py`.
+        """
+        return set(self.task['output_type']['quantile']['output_type_id']['required'])
 
 
     def get_available_ref_dates(self) -> list[str]:

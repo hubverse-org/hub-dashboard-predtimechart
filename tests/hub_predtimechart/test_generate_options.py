@@ -74,6 +74,65 @@ def test_generate_options_multi_target_per_block():
     assert set(options['task_ids'].keys()) == set(target_values)
 
 
+#
+# `intervals` tests
+#
+
+@pytest.mark.parametrize("hub_dir", ['tests/hubs/example-complex-forecast-hub',
+                                     'tests/hubs/flu-metrocast',
+                                     'tests/hubs/FluSight-forecast-hub',
+                                     'tests/hubs/covid19-forecast-hub'])
+def test_generate_options_intervals_80_pct_included(hub_dir):
+    # all test hubs require the 0.1 and 0.9 quantile levels, so all of them are offered the optional "80%" interval
+    hub_dir = Path(hub_dir)
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    act_options = ptc_options_for_hub(hub_config)
+    assert act_options['intervals'] == ["0%", "50%", "80%", "95%"]
+    assert act_options['initial_interval'] == "95%"
+
+
+def test_generate_options_intervals_no_80_pct_backing_quantiles():
+    # case: a hub with no forecast quantiles backing the 80% interval (no 0.1 or 0.9). it should be offered only the
+    # required intervals - o/w selecting "80%" would plot nothing
+    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    output_type_id = hub_config.model_tasks[0].task['output_type']['quantile']['output_type_id']
+    output_type_id['required'] = [0.025, 0.25, 0.5, 0.75, 0.975]  # no 0.1 or 0.9
+    act_options = ptc_options_for_hub(hub_config)
+    assert act_options['intervals'] == ["0%", "50%", "95%"]
+    assert act_options['initial_interval'] == "95%"
+
+
+@pytest.mark.parametrize("dropped_quantile_level", [0.1, 0.9])
+def test_generate_options_intervals_partial_80_pct_backing_quantiles(dropped_quantile_level):
+    # case: only one of the two quantile levels backing the 80% interval is present. an interval needs both of its
+    # bounds, so "80%" must not be offered
+    hub_dir = Path('tests/hubs/flu-metrocast')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    for model_task in hub_config.model_tasks:
+        output_type_id = model_task.task['output_type']['quantile']['output_type_id']
+        output_type_id['required'] = [level for level in output_type_id['required']
+                                      if level != dropped_quantile_level]
+    assert ptc_options_for_hub(hub_config)['intervals'] == ["0%", "50%", "95%"]
+
+
+def test_generate_options_intervals_80_pct_not_all_targets():
+    # case: a multi-target hub where only *one* target has the backing quantiles. `intervals` is a single hub-wide
+    # list, so "80%" must not be offered - it would plot nothing for the other target
+    hub_dir = Path('tests/hubs/flu-metrocast')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    assert len(hub_config.model_tasks) == 2  # the two targets are in separate model_tasks blocks
+    output_type_id = hub_config.model_tasks[1].task['output_type']['quantile']['output_type_id']
+    output_type_id['required'] = [0.025, 0.25, 0.5, 0.75, 0.975]  # no 0.1 or 0.9 for the second target only
+    assert ptc_options_for_hub(hub_config)['intervals'] == ["0%", "50%", "95%"]
+
+    # sanity check: with the first target similarly stripped and the second left alone, the result is the same
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+    output_type_id = hub_config.model_tasks[0].task['output_type']['quantile']['output_type_id']
+    output_type_id['required'] = [0.025, 0.25, 0.5, 0.75, 0.975]
+    assert ptc_options_for_hub(hub_config)['intervals'] == ["0%", "50%", "95%"]
+
+
 def test_generate_options_task_id_text_covid19_forecast_hub():
     hub_dir = Path('tests/hubs/covid19-forecast-hub')
     hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')

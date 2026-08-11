@@ -95,6 +95,52 @@ def test_forecast_data_for_model_df_no_data():
     assert act_data == {}
 
 
+#
+# 80% interval (q0.1/q0.9) tests
+#
+
+def test_forecast_data_for_model_df_80_pct_quantiles():
+    # the quantile levels backing the 80% interval are extracted when the model submitted them
+    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+
+    model_output_file = hub_dir / 'model-output/Flusight-baseline/2022-10-22-Flusight-baseline.csv'
+    act_data = forecast_data_for_model_df(hub_config, pd.read_csv(model_output_file), 'wk inc flu hosp', ('US',))
+    assert list(act_data.keys()) == ['target_end_date', 'q0.025', 'q0.1', 'q0.25', 'q0.5', 'q0.75', 'q0.9', 'q0.975']
+    assert act_data['q0.1'] == [1329, 1183]
+    assert act_data['q0.9'] == [2119, 2266]
+
+
+def test_forecast_data_for_model_df_no_80_pct_quantiles():
+    # case: no backing forecast quantiles for the 80% interval. the model submitted only the required quantile levels,
+    # so the output simply has no 'q0.1'/'q0.9' keys (predtimechart plots no interval, as with the "0%" option).
+    # NB: Test-NumericOnly has exclusively numeric location codes, hence the `dtype` - see
+    # `_generate_forecast_json_files()`
+    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+
+    model_output_file = hub_dir / 'model-output/Test-NumericOnly/2022-10-22-Test-NumericOnly.csv'
+    model_df = pd.read_csv(model_output_file, dtype={'location': str})
+    act_data = forecast_data_for_model_df(hub_config, model_df, 'wk inc flu hosp', ('01',))
+    assert list(act_data.keys()) == ['target_end_date', 'q0.025', 'q0.25', 'q0.5', 'q0.75', 'q0.975']
+    assert 'q0.1' not in act_data
+    assert 'q0.9' not in act_data
+
+
+def test_forecast_data_for_model_df_partial_80_pct_quantiles():
+    # case: the model submitted only one of the two quantile levels backing the 80% interval. we extract what's there
+    # and leave it to predtimechart to skip an interval that's missing a bound
+    hub_dir = Path('tests/hubs/example-complex-forecast-hub')
+    hub_config = HubConfigPtc(hub_dir, hub_dir / 'hub-config/predtimechart-config.yml')
+
+    model_output_file = hub_dir / 'model-output/Flusight-baseline/2022-10-22-Flusight-baseline.csv'
+    model_df = pd.read_csv(model_output_file)
+    model_df = model_df.loc[model_df['output_type_id'] != 0.9, :]  # 0.1 remains
+    act_data = forecast_data_for_model_df(hub_config, model_df, 'wk inc flu hosp', ('US',))
+    assert 'q0.1' in act_data
+    assert 'q0.9' not in act_data
+
+
 def test_forecast_data_for_model_df_invalid_target():
     # test for the passed target not being present in any hub_config.model_tasks's viz_target_id
     hub_dir = Path('tests/hubs/flu-metrocast')
