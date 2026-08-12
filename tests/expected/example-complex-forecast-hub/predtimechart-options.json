@@ -67,7 +67,7 @@
     }
   },
   "initial_task_ids": {"location": "US"},
-  "intervals": ["0%", "50%", "95%"],
+  "intervals": ["0%", "50%", "80%", "95%"],
   "initial_interval": "95%",
   "available_as_ofs": {
     "wk inc flu hosp": ["2022-10-22", "2022-11-19", "2022-12-17"]

@@ -66,7 +66,7 @@
     }
   },
   "initial_task_ids": {"location": "US"},
-  "intervals": ["0%", "50%", "95%"],
+  "intervals": ["0%", "50%", "80%", "95%"],
   "initial_interval": "95%",
   "available_as_ofs": {
     "wk inc flu hosp": ["2024-04-20", "2024-04-27", "2024-05-04"]
