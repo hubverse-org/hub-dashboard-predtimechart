@@ -42,8 +42,8 @@ The major parts of this project are:
 Initially the visualization will have these limitations:
 
 - Only one round block in `tasks.json > rounds` can be plotted.
-- Only one `model_tasks` group within that round block can be plotted, and only `model_tasks` groups with `quantile` [output_types](https://docs.hubverse.io/en/latest/user-guide/model-output.html#formats-of-model-output) will be considered.
-- The following quantile levels (`output_type_id`s) are present in the data: 0.025, 0.25, 0.5, 0.75, 0.975 . The 0.1 and 0.9 levels are optional; they back the `80%` prediction interval, which is offered only to hubs that require them (see `intervals` above).
+- Only `model_tasks` groups with `quantile` [output_types](https://docs.hubverse.io/en/latest/user-guide/model-output.html#formats-of-model-output) will be considered.
+- The following quantile levels (`output_type_id`s) are present in the data: 0.025, 0.25, 0.5, 0.75, 0.975
 - The hub has `reference_date`|`origin_date` and `target_date`|`target_end_date` task IDs in `tasks.json > rounds > model_tasks > task_ids`.
 - Model metadata must contain a boolean `designated_model` field.
 - The *target* is the unit of visualization: each qualifying `target_metadata` entry produces one visualization target (with its own options entry, data files, and `available_as_ofs`). A `target_metadata` entry qualifies when `is_step_ahead: true` and its surrounding `model_tasks` block has `quantile` in `output_type`. A single `model_tasks` block may therefore contribute multiple visualization targets (one per qualifying `target_metadata` entry).
